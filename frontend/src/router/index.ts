@@ -37,6 +37,12 @@ const routes = [
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),
   },
+  {
+    path: '/photos/:id',
+    name: 'photo-detail',
+    component: () => import('@/views/PhotoDetailView.vue'),
+    meta: { title: '照片详情' },
+  },
 ]
 
 const router = createRouter({

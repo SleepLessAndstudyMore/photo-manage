@@ -1,28 +1,131 @@
-from fastapi import APIRouter, HTTPException
+import os
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, select
+
+from backend.database import get_session
+from backend.models.library_source import LibrarySource
+from backend.models.photo import Photo
+from backend.schemas.library import (
+    LibraryCreate, LibraryResponse, LibraryListResponse, ScanTriggerResponse,
+)
+from backend.services.scanner import Scanner
+from backend.tasks.task_manager import task_manager, TaskType
 
 router = APIRouter(prefix="/api/v1/libraries", tags=["libraries"])
 
 
-@router.get("")
-async def list_libraries(page: int = 1, page_size: int = 50):
-    raise HTTPException(status_code=501, detail="Not implemented")
+def _get_scanner() -> Scanner:
+    from backend.database import Session as _Session, engine
+    return Scanner(lambda: _Session(engine))
 
 
-@router.post("")
-async def add_library():
-    raise HTTPException(status_code=501, detail="Not implemented")
+@router.get("", response_model=LibraryListResponse)
+async def list_libraries(session: Session = Depends(get_session)):
+    libraries = session.exec(select(LibrarySource).order_by(LibrarySource.created_at.desc())).all()
+    return LibraryListResponse(
+        items=[LibraryResponse.model_validate(lib) for lib in libraries]
+    )
 
 
-@router.delete("/{library_id}")
-async def delete_library(library_id: int):
-    raise HTTPException(status_code=501, detail="Not implemented")
+@router.post("", response_model=LibraryResponse, status_code=201)
+async def add_library(
+    body: LibraryCreate,
+    session: Session = Depends(get_session),
+):
+    path = os.path.abspath(body.path)
+    if not os.path.isdir(path):
+        raise HTTPException(status_code=400, detail=f"目录不存在: {path}")
+
+    existing = session.exec(
+        select(LibrarySource).where(LibrarySource.path == path)
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="该目录已添加为图库源")
+
+    library = LibrarySource(name=body.name.strip(), path=path, type="local")
+    session.add(library)
+    session.commit()
+    session.refresh(library)
+
+    scanner = _get_scanner()
+    task_id = task_manager.create_and_run(
+        TaskType.SCAN,
+        scanner.scan_library,
+        args=(library.id, True),
+        library_id=library.id,
+    )
+
+    return LibraryResponse.model_validate(library)
 
 
-@router.post("/{library_id}/scan")
-async def trigger_scan(library_id: int):
-    raise HTTPException(status_code=501, detail="Not implemented")
+@router.delete("/{library_id}", status_code=204)
+async def delete_library(
+    library_id: int,
+    session: Session = Depends(get_session),
+):
+    library = session.get(LibrarySource, library_id)
+    if not library:
+        raise HTTPException(status_code=404, detail="图库源不存在")
+
+    # Delete associated photos and their thumbnails
+    photos = session.exec(
+        select(Photo).where(Photo.library_source_id == library_id)
+    ).all()
+    for photo in photos:
+        # Try to delete thumbnail files (send2trash optional)
+        for attr in ("thumbnail_path", "preview_path"):
+            fname = getattr(photo, attr, None)
+            if fname:
+                fpath = Path("thumbnails") / fname
+                if fpath.exists():
+                    try:
+                        fpath.unlink()
+                    except OSError:
+                        pass
+        session.delete(photo)
+
+    session.delete(library)
+    session.commit()
+    return None
 
 
-@router.post("/{library_id}/check-consistency")
-async def check_consistency(library_id: int):
-    raise HTTPException(status_code=501, detail="Not implemented")
+@router.post("/{library_id}/scan", response_model=ScanTriggerResponse)
+async def trigger_scan(
+    library_id: int,
+    session: Session = Depends(get_session),
+):
+    library = session.get(LibrarySource, library_id)
+    if not library:
+        raise HTTPException(status_code=404, detail="图库源不存在")
+    if library.scan_status == "scanning":
+        raise HTTPException(status_code=409, detail="该图库源正在扫描中")
+
+    scanner = _get_scanner()
+    task_id = task_manager.create_and_run(
+        TaskType.SCAN,
+        scanner.scan_library,
+        args=(library_id, False),
+        library_id=library_id,
+    )
+    return ScanTriggerResponse(task_id=task_id, status="running", message="扫描已启动")
+
+
+@router.post("/{library_id}/check-consistency", response_model=ScanTriggerResponse)
+async def check_consistency(
+    library_id: int,
+    session: Session = Depends(get_session),
+):
+    library = session.get(LibrarySource, library_id)
+    if not library:
+        raise HTTPException(status_code=404, detail="图库源不存在")
+
+    scanner = _get_scanner()
+    task_id = task_manager.create_and_run(
+        TaskType.CONSISTENCY,
+        scanner.check_consistency,
+        args=(library_id,),
+        library_id=library_id,
+    )
+    return ScanTriggerResponse(task_id=task_id, status="running", message="一致性校验已启动")

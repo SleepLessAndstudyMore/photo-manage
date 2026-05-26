@@ -23,4 +23,7 @@ class PhotoFace(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
     photo: "Photo" = Relationship(back_populates="faces")
-    face_cluster: Optional["FaceCluster"] = Relationship(back_populates="faces")
+    face_cluster: Optional["FaceCluster"] = Relationship(
+        back_populates="faces",
+        sa_relationship_kwargs={"foreign_keys": "[PhotoFace.face_cluster_id]"},
+    )

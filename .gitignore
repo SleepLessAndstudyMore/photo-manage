@@ -1,34 +1,24 @@
-# Python
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
-
-# Database
-data/photo_manager.db
-data/photo_manager.db-wal
-data/photo_manager.db-shm
-*.db
-
-# Thumbnails & Models (runtime data)
+# Generated data
+/data/
 /thumbnails/
 /models/
 
-# Frontend
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node
 frontend/node_modules/
 frontend/dist/
-
-# Environment
-.env
-server.log
 
 # OS
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
+# Logs
+*.log
+
+# Local Claude settings
+.claude/settings.local.json

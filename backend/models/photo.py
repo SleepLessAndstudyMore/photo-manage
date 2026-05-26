@@ -38,6 +38,7 @@ class Photo(SQLModel, table=True):
     focal_length: Optional[float] = Field(default=None)
     gps_latitude: Optional[float] = Field(default=None)
     gps_longitude: Optional[float] = Field(default=None)
+    file_modified_time: Optional[float] = Field(default=None)
     rating: int = Field(default=0)
     is_favorite: bool = Field(default=False)
     file_missing: bool = Field(default=False, index=True)

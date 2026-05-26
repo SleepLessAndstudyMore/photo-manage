@@ -16,6 +16,13 @@ def init_db() -> None:
     SQLModel.metadata.create_all(engine)
     with engine.connect() as conn:
         conn.execute(text("PRAGMA journal_mode=WAL"))
+        # S1 migration: add file_modified_time column
+        try:
+            conn.execute(
+                text("ALTER TABLE photo ADD COLUMN file_modified_time FLOAT")
+            )
+        except Exception:
+            pass  # Column already exists
         conn.commit()
 
 

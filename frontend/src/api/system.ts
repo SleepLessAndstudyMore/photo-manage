@@ -16,10 +16,10 @@ export function getTasks() {
   return client.get('/tasks')
 }
 
-export function getTask(id: number) {
+export function getTask(id: string) {
   return client.get(`/tasks/${id}`)
 }
 
-export function cancelTask(id: number) {
+export function cancelTask(id: string) {
   return client.post(`/tasks/${id}/cancel`)
 }

@@ -15,4 +15,7 @@ class FaceCluster(SQLModel, table=True):
     face_count: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
-    faces: list["PhotoFace"] = Relationship(back_populates="face_cluster")
+    faces: list["PhotoFace"] = Relationship(
+        back_populates="face_cluster",
+        sa_relationship_kwargs={"foreign_keys": "[PhotoFace.face_cluster_id]"},
+    )
