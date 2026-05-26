@@ -22,6 +22,8 @@ class TaskType(str, Enum):
     SCAN = "scan"
     THUMBNAIL = "thumbnail"
     CONSISTENCY = "consistency"
+    TAG = "tag"
+    DUPLICATE = "duplicate"
 
 
 @dataclass

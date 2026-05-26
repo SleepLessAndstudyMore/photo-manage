@@ -9,6 +9,26 @@
         <el-icon><FolderOpened /></el-icon>
         <span>文件夹</span>
       </router-link>
+      <router-link to="/search" class="nav-link" active-class="nav-link--active">
+        <el-icon><Search /></el-icon>
+        <span>搜索</span>
+      </router-link>
+      <router-link to="/tags" class="nav-link" active-class="nav-link--active">
+        <el-icon><PriceTag /></el-icon>
+        <span>标签</span>
+      </router-link>
+      <router-link to="/albums" class="nav-link" active-class="nav-link--active">
+        <el-icon><Collection /></el-icon>
+        <span>相册</span>
+      </router-link>
+      <router-link to="/map" class="nav-link" active-class="nav-link--active">
+        <el-icon><MapLocation /></el-icon>
+        <span>地图</span>
+      </router-link>
+      <router-link to="/duplicates" class="nav-link" active-class="nav-link--active">
+        <el-icon><Delete /></el-icon>
+        <span>清理</span>
+      </router-link>
       <router-link to="/settings" class="nav-link" active-class="nav-link--active">
         <el-icon><Setting /></el-icon>
         <span>设置</span>
@@ -26,7 +46,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { Clock, FolderOpened, Setting } from '@element-plus/icons-vue'
+import { Clock, FolderOpened, Search, PriceTag, Collection, MapLocation, Delete, Setting } from '@element-plus/icons-vue'
 import { useSystemStore } from '@/stores/system'
 
 onMounted(() => {

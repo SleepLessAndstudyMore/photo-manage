@@ -1,6 +1,6 @@
 import client from './client'
 
-export function getPhotos(params?: { page?: number; page_size?: number }) {
+export function getPhotos(params?: Record<string, unknown>) {
   return client.get('/photos', { params })
 }
 
@@ -20,8 +20,12 @@ export function searchPhotos(data: Record<string, unknown>) {
   return client.post('/photos/search', data)
 }
 
-export function getDuplicates() {
-  return client.get('/photos/duplicates')
+export function getDuplicates(params?: Record<string, unknown>) {
+  return client.get('/photos/duplicates', { params })
+}
+
+export function getGpsPhotos(params?: Record<string, unknown>) {
+  return client.get('/photos/gps', { params })
 }
 
 export function streamVideo(id: number) {

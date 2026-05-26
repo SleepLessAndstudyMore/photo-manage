@@ -1,9 +1,267 @@
 <template>
   <div class="view-tags">
-    <h1>标签</h1>
-    <p class="text-secondary">标签管理视图 — 将在 S2 中实现</p>
+    <div class="tags-header">
+      <h2>标签云</h2>
+      <div class="tags-header-actions">
+        <el-radio-group v-model="tagType" size="small" @change="fetchTagList">
+          <el-radio-button value="">全部</el-radio-button>
+          <el-radio-button value="auto">AI 标签</el-radio-button>
+          <el-radio-button value="manual">手动标签</el-radio-button>
+        </el-radio-group>
+        <el-button size="small" text @click="showAddTagDialog = true">创建标签</el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="tags-loading">
+      <el-skeleton :rows="3" animated />
+    </div>
+
+    <div v-else-if="tags.length === 0" class="tags-empty">
+      <el-icon :size="48"><PriceTag /></el-icon>
+      <p>暂无标签，扫描照片后将自动生成 AI 标签</p>
+    </div>
+
+    <div v-else class="tag-cloud">
+      <div
+        v-for="tag in tags"
+        :key="tag.id"
+        class="tag-item"
+        :style="{ fontSize: tagFontSize(tag.photo_count) }"
+        @click="selectTag(tag)"
+      >
+        <span class="tag-name">{{ tag.name_zh || tag.name }}</span>
+        <span class="tag-count">{{ tag.photo_count }}</span>
+      </div>
+    </div>
+
+    <!-- Tag photos dialog -->
+    <el-dialog
+      v-model="tagDialogVisible"
+      :title="selectedTag?.name_zh || selectedTag?.name"
+      width="80%"
+      top="5vh"
+    >
+      <div v-if="tagPhotos.length === 0" class="dialog-empty">该标签下暂无照片</div>
+      <div v-else class="tag-photos-grid">
+        <div
+          v-for="photo in tagPhotos"
+          :key="photo.id"
+          class="tag-photo-item"
+          @click="goToPhoto(photo.id)"
+        >
+          <img
+            v-if="photo.thumbnail_path"
+            :src="`/thumbnails/${photo.thumbnail_path}`"
+            :alt="photo.file_name"
+          />
+          <div v-else class="photo-placeholder">
+            <el-icon><PictureFilled /></el-icon>
+          </div>
+          <div v-if="selectedTag?.type === 'auto'" class="photo-tag-info">
+            <el-tag size="small" type="info">
+              {{ selectedTag?.name_zh || selectedTag?.name }}
+            </el-tag>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="tagDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Create tag dialog -->
+    <el-dialog v-model="showAddTagDialog" title="创建标签" width="400px">
+      <el-form label-position="top">
+        <el-form-item label="英文名称">
+          <el-input v-model="newTagName" placeholder="如: beautiful_landscape" />
+        </el-form-item>
+        <el-form-item label="中文名称">
+          <el-input v-model="newTagNameZh" placeholder="如: 美丽风景" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddTagDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleCreateTag">创建</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { PriceTag, PictureFilled } from '@element-plus/icons-vue'
+import { getTags, getTagPhotos, createTag } from '@/api/tags'
+
+interface TagItem {
+  id: number
+  name: string
+  name_zh: string | null
+  type: string
+  photo_count: number
+}
+
+interface PhotoItem {
+  id: number
+  file_name: string
+  thumbnail_path: string | null
+}
+
+const router = useRouter()
+
+const tags = ref<TagItem[]>([])
+const loading = ref(false)
+const tagType = ref('')
+const tagDialogVisible = ref(false)
+const selectedTag = ref<TagItem | null>(null)
+const tagPhotos = ref<PhotoItem[]>([])
+const showAddTagDialog = ref(false)
+const newTagName = ref('')
+const newTagNameZh = ref('')
+
+const MAX_FONT_SIZE = 36
+const MIN_FONT_SIZE = 12
+
+onMounted(() => {
+  fetchTagList()
+})
+
+async function fetchTagList() {
+  loading.value = true
+  try {
+    const params: Record<string, unknown> = { sort_by: 'photo_count', page_size: 200 }
+    if (tagType.value) params.type = tagType.value
+    const { data } = await getTags(params)
+    tags.value = data.items ?? []
+  } finally {
+    loading.value = false
+  }
+}
+
+function tagFontSize(count: number) {
+  if (tags.value.length === 0) return `${MIN_FONT_SIZE}px`
+  const maxCount = Math.max(...tags.value.map(t => t.photo_count), 1)
+  const ratio = count / maxCount
+  return `${MIN_FONT_SIZE + ratio * (MAX_FONT_SIZE - MIN_FONT_SIZE)}px`
+}
+
+async function selectTag(tag: TagItem) {
+  selectedTag.value = tag
+  tagDialogVisible.value = true
+  try {
+    const { data } = await getTagPhotos(tag.id, { page_size: 200 })
+    tagPhotos.value = data.items ?? []
+  } catch {
+    tagPhotos.value = []
+  }
+}
+
+function goToPhoto(id: number) {
+  router.push(`/photos/${id}`)
+}
+
+async function handleCreateTag() {
+  if (!newTagName.value.trim()) return
+  await createTag({ name: newTagName.value.trim(), name_zh: newTagNameZh.value.trim() || undefined })
+  newTagName.value = ''
+  newTagNameZh.value = ''
+  showAddTagDialog.value = false
+  fetchTagList()
+}
 </script>
+
+<style scoped>
+.view-tags {
+  height: calc(100vh - 52px);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+.tags-header h2 { margin: 0; }
+.tags-header-actions { display: flex; align-items: center; gap: 12px; }
+.tags-loading { padding: 40px; }
+.tags-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #999);
+  gap: 12px;
+}
+.tag-cloud {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 12px 20px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.tag-item {
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--color-primary-light, #e6f7f7);
+  color: var(--color-text-primary, #333);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.tag-item:hover {
+  background: var(--color-primary, #7EC8C8);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(126, 200, 200, 0.3);
+}
+.tag-count {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.tag-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.tag-photo-item {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--color-bg-secondary, #f5f5f5);
+}
+.tag-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+}
+.photo-tag-info {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+}
+.dialog-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-secondary, #999);
+}
+</style>

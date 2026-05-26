@@ -23,6 +23,13 @@ def init_db() -> None:
             )
         except Exception:
             pass  # Column already exists
+        # S2 migration: ensure name_zh column on tag table
+        try:
+            conn.execute(
+                text("ALTER TABLE tag ADD COLUMN name_zh VARCHAR")
+            )
+        except Exception:
+            pass
         conn.commit()
 
 

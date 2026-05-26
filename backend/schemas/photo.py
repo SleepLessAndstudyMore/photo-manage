@@ -36,6 +36,17 @@ class PhotoResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PhotoTagInfo(BaseModel):
+    id: int
+    tag_id: int
+    tag_name: str
+    tag_name_zh: str | None = None
+    confidence: float | None = None
+    source: str
+
+    model_config = {"from_attributes": True}
+
+
 class PhotoDetailResponse(PhotoResponse):
     camera_make: str | None = None
     camera_model: str | None = None
@@ -52,6 +63,7 @@ class PhotoDetailResponse(PhotoResponse):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     file_modified_time: float | None = None
+    tags: list[PhotoTagInfo] = []
 
 
 class PhotoExifResponse(BaseModel):

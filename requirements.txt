@@ -9,3 +9,4 @@ watchdog>=4.0.0
 ImageHash>=4.3.0
 piexif>=1.1.2
 python-multipart>=0.0.9
+ultralytics>=8.3.0

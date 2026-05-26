@@ -7,9 +7,11 @@ from sqlalchemy import desc as sa_desc, asc as sa_asc
 
 from backend.database import get_session
 from backend.models.photo import Photo
+from backend.models.tag import Tag
+from backend.models.photo_tag import PhotoTag
 from backend.schemas.photo import (
     PhotoListParams, PhotoResponse, PhotoDetailResponse, PhotoExifResponse,
-    PhotoUpdateRequest, PhotoListResponse,
+    PhotoUpdateRequest, PhotoListResponse, PhotoTagInfo,
     TimelineResponse, TimelineYear, TimelineMonth, TimelineDay,
     FolderItem, FolderListResponse,
 )
@@ -157,12 +159,135 @@ async def list_folders(
     return FolderListResponse(items=items)
 
 
+# ---- Static routes must come before /{photo_id} ---- #
+
+@router.get("/gps")
+async def get_gps_photos(
+    bounds: str | None = None,
+    library_id: int | None = None,
+    session: Session = Depends(get_session),
+):
+    """Get photos with GPS coordinates. Optionally filter by map bounds."""
+    base = select(Photo).where(
+        Photo.gps_latitude.is_not(None),
+        Photo.gps_longitude.is_not(None),
+        Photo.file_missing == False,  # noqa: E712
+    )
+
+    if library_id is not None:
+        base = base.where(Photo.library_source_id == library_id)
+
+    if bounds:
+        try:
+            parts = [float(x) for x in bounds.split(",")]
+            if len(parts) == 4:
+                south, west, north, east = parts
+                base = base.where(Photo.gps_latitude >= south)
+                base = base.where(Photo.gps_latitude <= north)
+                base = base.where(Photo.gps_longitude >= west)
+                base = base.where(Photo.gps_longitude <= east)
+        except (ValueError, TypeError):
+            pass
+
+    photos = session.exec(base.order_by(Photo.date_taken.desc())).all()
+    items = []
+    for p in photos:
+        items.append({
+            "id": p.id,
+            "file_name": p.file_name,
+            "latitude": p.gps_latitude,
+            "longitude": p.gps_longitude,
+            "thumbnail_path": p.thumbnail_path,
+            "date_taken": p.date_taken.isoformat() if p.date_taken else None,
+        })
+    return {"items": items, "total": len(items)}
+
+
+@router.post("/search", response_model=PhotoListResponse)
+async def search_photos(
+    body: dict,
+    session: Session = Depends(get_session),
+):
+    from backend.services.search_engine import structured_search, hybrid_search
+
+    mode = body.get("mode", "structured")
+    page = body.get("page", 1)
+    page_size = body.get("page_size", 50)
+
+    if mode == "hybrid":
+        query = body.get("query", "")
+        photos, total = hybrid_search(
+            session,
+            query=query,
+            page=page,
+            page_size=page_size,
+        )
+    else:
+        photos, total = structured_search(
+            session,
+            filters=body.get("filters"),
+            logic=body.get("logic", "AND"),
+            sort_by=body.get("sort_by", "date_taken"),
+            sort_order=body.get("sort_order", "desc"),
+            page=page,
+            page_size=page_size,
+        )
+
+    return PhotoListResponse(
+        items=[PhotoResponse.model_validate(p) for p in photos],
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.get("/duplicates")
+async def get_duplicates(
+    type: str = Query(default="all"),
+    threshold: int = Query(default=10),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=50, ge=1, le=200),
+):
+    from backend.database import Session as _Session, engine
+    from backend.services.duplicate_detector import DuplicateDetector
+
+    detector = DuplicateDetector(lambda: _Session(engine))
+    result = detector.find_duplicates(
+        dup_type=type,
+        threshold=threshold,
+        page=page,
+        page_size=page_size,
+    )
+    return result
+
+
+# ---- Parameterized photo routes ---- #
+
 @router.get("/{photo_id}", response_model=PhotoDetailResponse)
 async def get_photo(photo_id: int, session: Session = Depends(get_session)):
     photo = session.get(Photo, photo_id)
     if not photo:
         raise HTTPException(status_code=404, detail="照片不存在")
-    return PhotoDetailResponse.model_validate(photo)
+
+    resp = PhotoDetailResponse.model_validate(photo)
+    # Populate tags
+    tags_data = []
+    pts = session.exec(
+        select(PhotoTag, Tag)
+        .join(Tag)
+        .where(PhotoTag.photo_id == photo_id)
+    ).all()
+    for pt, tag in pts:
+        tags_data.append(PhotoTagInfo(
+            id=pt.photo_id,
+            tag_id=tag.id,
+            tag_name=tag.name,
+            tag_name_zh=tag.name_zh,
+            confidence=pt.confidence,
+            source=pt.source,
+        ))
+    resp.tags = tags_data
+    return resp
 
 
 @router.get("/{photo_id}/exif", response_model=PhotoExifResponse)
@@ -209,16 +334,6 @@ async def update_photo(
     session.commit()
     session.refresh(photo)
     return PhotoDetailResponse.model_validate(photo)
-
-
-@router.post("/search")
-async def search_photos():
-    raise HTTPException(status_code=501, detail="S2 实现")
-
-
-@router.get("/duplicates")
-async def get_duplicates():
-    raise HTTPException(status_code=501, detail="S2 实现")
 
 
 @router.get("/{photo_id}/stream")

@@ -33,6 +33,22 @@ const routes = [
     component: () => import('@/views/TagsView.vue'),
   },
   {
+    path: '/albums',
+    name: 'albums',
+    component: () => import('@/views/AlbumsView.vue'),
+  },
+  {
+    path: '/duplicates',
+    name: 'duplicates',
+    component: () => import('@/views/DuplicatesView.vue'),
+  },
+  {
+    path: '/albums/:id',
+    name: 'album-detail',
+    component: () => import('@/views/AlbumDetailView.vue'),
+    meta: { title: '相册详情' },
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),

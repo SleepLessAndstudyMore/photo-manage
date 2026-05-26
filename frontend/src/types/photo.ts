@@ -101,3 +101,68 @@ export interface FolderItem {
 export interface FolderListResponse {
   items: FolderItem[]
 }
+
+export interface PhotoTagInfo {
+  id: number
+  tag_id: number
+  tag_name: string
+  tag_name_zh: string | null
+  confidence: number | null
+  source: string
+}
+
+export interface PhotoDetail extends Photo {
+  camera_make: string | null
+  camera_model: string | null
+  lens_model: string | null
+  f_number: number | null
+  exposure_time: string | null
+  iso: number | null
+  focal_length: number | null
+  gps_latitude: number | null
+  gps_longitude: number | null
+  orientation: number
+  date_modified: string | null
+  file_hash: string | null
+  tags: PhotoTagInfo[]
+}
+
+export interface Album {
+  id: number
+  name: string
+  description: string | null
+  cover_photo_id: number | null
+  photo_count: number
+  created_at: string | null
+  updated_at: string | null
+  cover_thumbnail: string | null
+}
+
+export interface AlbumListResponse {
+  items: Album[]
+  total: number
+}
+
+export interface DuplicateGroup {
+  type: 'bitwise' | 'visual'
+  hash?: string
+  distance?: number | null
+  photos: DuplicatePhoto[]
+  suggestion: 'safe_to_delete' | 'review_needed'
+  message: string
+}
+
+export interface DuplicatePhoto {
+  id: number
+  file_path: string
+  file_name: string
+  file_size: number
+  thumbnail_path: string | null
+}
+
+export interface DuplicatesResponse {
+  groups: DuplicateGroup[]
+  total: number
+  page: number
+  page_size: number
+}

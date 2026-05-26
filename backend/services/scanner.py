@@ -104,6 +104,17 @@ class Scanner:
                     args=(new_photo_ids, new_source_paths, new_is_videos, self._session_factory),
                     library_id=library_id,
                 )
+
+            # Submit YOLOv8 auto-tagging task
+            if new_photo_ids:
+                from backend.services.tag_generator import TagGenerator
+                tag_gen = TagGenerator(self._session_factory)
+                task_manager.create_and_run(
+                    TaskType.TAG,
+                    tag_gen.generate_tags,
+                    args=(new_photo_ids, new_source_paths, new_is_videos),
+                    library_id=library_id,
+                )
         finally:
             session.close()
 

@@ -135,3 +135,42 @@ async def cancel_task(task_id: str):
         raise HTTPException(status_code=404, detail="任务不存在或已完成")
     task = task_manager.get_task(task_id)
     return TaskResponse(**task.to_dict())
+
+
+@router.post("/system/trash", status_code=204)
+async def send_to_trash(body: dict, session: Session = Depends(get_session)):
+    """Move a file to system trash using send2trash."""
+    path = body.get("path", "")
+    if not path:
+        raise HTTPException(status_code=400, detail="路径不能为空")
+
+    try:
+        import send2trash as s2t
+        s2t.send2trash(path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"删除失败: {e}")
+    return None
+
+
+@router.post("/system/delete-photo/{photo_id}", status_code=204)
+async def delete_photo_file(photo_id: int, session: Session = Depends(get_session)):
+    """Delete a photo file via send2trash and mark it as missing."""
+    from backend.models.photo import Photo
+
+    photo = session.get(Photo, photo_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="照片不存在")
+
+    # Move to trash
+    import os
+    if os.path.exists(photo.file_path):
+        try:
+            import send2trash as s2t
+            s2t.send2trash(photo.file_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"删除文件失败: {e}")
+
+    photo.file_missing = True
+    session.add(photo)
+    session.commit()
+    return None
