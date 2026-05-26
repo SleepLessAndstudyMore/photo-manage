@@ -1,6 +1,7 @@
 import sys
 import threading
 import webbrowser
+import argparse
 from pathlib import Path
 
 # Ensure project root is on sys.path
@@ -50,7 +51,23 @@ def run_tray_icon(server_ref):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="智能照片管理系统")
+    parser.add_argument("--port", type=int, default=None, help="服务端口号")
+    args = parser.parse_args()
+
+    if args.port is not None:
+        settings.PORT = args.port
+
     ensure_dirs()
+
+    # 数据库完整性检查
+    from backend.database import check_database_integrity
+    issues = check_database_integrity()
+    if issues:
+        import logging
+        logging.warning(f"数据库完整性检查发现 {len(issues)} 个问题: {issues}")
+        print(f"[提示] 数据库完整性检查发现 {len(issues)} 个问题。如果遇到异常，请删除 data/photo_manager.db 后重新扫描。")
+
     app = create_app()
 
     # Mount frontend static files — must be after API routes

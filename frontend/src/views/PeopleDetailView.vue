@@ -260,10 +260,10 @@ function goToPhoto(id: number) {
 
 <style scoped>
 .view-people-detail {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: var(--space-lg);
   overflow-y: auto;
 }
 .loading-area, .error-area, .empty-area {
@@ -272,24 +272,30 @@ function goToPhoto(id: number) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 .detail-header {
   flex-shrink: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
 }
 .header-main {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 12px;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
 }
 .header-avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--color-bg-tertiary, #eee);
+  background: var(--bg-tertiary, #eee);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -299,6 +305,9 @@ function goToPhoto(id: number) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.avatar-placeholder {
+  color: #ccc;
 }
 .header-info {
   flex: 1;
@@ -311,7 +320,7 @@ function goToPhoto(id: number) {
   align-items: center;
 }
 .person-name {
-  font-size: 20px;
+  font-size: var(--text-2xl);
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -319,10 +328,10 @@ function goToPhoto(id: number) {
   gap: 6px;
 }
 .edit-icon {
-  font-size: 14px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-base);
+  color: var(--text-secondary, #999);
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-fast);
 }
 .person-name:hover .edit-icon {
   opacity: 1;
@@ -333,8 +342,8 @@ function goToPhoto(id: number) {
   align-items: center;
 }
 .person-count {
-  font-size: 14px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-base);
+  color: var(--text-secondary, #999);
 }
 .header-actions {
   flex-shrink: 0;
@@ -344,24 +353,26 @@ function goToPhoto(id: number) {
   overflow-y: auto;
 }
 .photos-header {
-  font-size: 13px;
-  color: var(--color-text-secondary, #999);
-  margin-bottom: 12px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary, #999);
+  margin-bottom: var(--space-md);
 }
 .photos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  gap: var(--space-md);
 }
 .photo-item {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-bg-secondary, #f5f5f5);
-  transition: transform 0.15s;
+  background: var(--bg-secondary, #f5f5f5);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
 }
 .photo-item:hover {
   transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
 }
 .photo-item img {
   width: 100%;
@@ -378,19 +389,19 @@ function goToPhoto(id: number) {
 }
 .photo-name {
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: var(--text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .load-more {
   text-align: center;
-  padding: 12px;
+  padding: var(--space-md);
 }
 /* Split dialog */
 .split-hint {
-  margin-bottom: 12px;
-  color: var(--color-text-secondary, #666);
+  margin-bottom: var(--space-md);
+  color: var(--text-secondary, #666);
 }
 .face-grid {
   display: grid;
@@ -399,22 +410,23 @@ function goToPhoto(id: number) {
 }
 .face-item {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   border: 2px solid transparent;
   text-align: center;
-  background: var(--color-bg-secondary, #f5f5f5);
+  background: var(--bg-secondary, #f5f5f5);
   padding: 4px;
-  transition: border-color 0.15s;
+  transition: all var(--transition-fast);
 }
 .face-item.selected {
-  border-color: var(--color-primary, #7EC8C8);
+  border-color: var(--accent, #7EC8C8);
+  box-shadow: var(--card-shadow);
 }
 .face-item img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 .face-placeholder {
   aspect-ratio: 1;
@@ -424,8 +436,8 @@ function goToPhoto(id: number) {
   color: #ccc;
 }
 .face-confidence {
-  font-size: 11px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary, #999);
   margin-top: 2px;
 }
 </style>

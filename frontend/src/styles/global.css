@@ -6,16 +6,35 @@
   padding: 0;
 }
 
-html, body, #app {
+html, body {
   height: 100%;
-  font-family: var(--font-family);
-  background-color: var(--bg-primary);
+}
+
+#app {
+  height: 100%;
+  font-family: var(--font-sans);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  position: relative;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
-/* 全局隐藏原生滚动条，仅 Hover 时显现极细半透明滚动条 */
+/* ===== 多层背景系统：在 #app 内容背后渲染以供 backdrop-filter 模糊 ===== */
+#app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--bg-dots),
+    var(--bg-glow);
+  background-size: var(--bg-dots-size), cover;
+}
+
+/* === 滚动条 — 全局隐藏，Hover 显现 === */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
 }
@@ -33,6 +52,46 @@ html, body, #app {
   background: var(--scrollbar-color-hover);
 }
 
+/* 全局默认按钮样式重置 */
+button {
+  font-family: inherit;
+}
+
+/* 选择文本颜色 */
+::selection {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
 .text-secondary {
   color: var(--text-secondary);
+}
+
+/* 胶囊按钮基类 */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 20px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.pill-btn:hover {
+  background: var(--accent-light);
+}
+
+.pill-btn--primary {
+  background: var(--accent);
+  color: white;
+}
+
+.pill-btn--primary:hover {
+  background: var(--accent-hover);
 }

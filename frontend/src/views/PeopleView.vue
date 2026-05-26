@@ -189,16 +189,16 @@ async function onClusterFaces() {
 
 <style scoped>
 .view-people {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: var(--space-lg);
 }
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
 .page-header h2 { margin: 0; }
@@ -212,23 +212,23 @@ async function onClusterFaces() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 .text-secondary {
-  color: var(--color-text-secondary, #999);
-  font-size: 14px;
+  color: var(--text-secondary, #999);
+  font-size: var(--text-base);
 }
 .cluster-count {
-  font-size: 13px;
-  color: var(--color-text-secondary, #999);
-  margin-bottom: 12px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary, #999);
+  margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
 .clusters-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, 150px);
-  gap: 12px;
+  gap: var(--space-md);
   justify-content: center;
   align-content: start;
   align-items: start;
@@ -240,29 +240,31 @@ async function onClusterFaces() {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 20px 12px 16px;
-  border-radius: 12px;
-  background: var(--color-bg-primary, #fff);
-  border: 1px solid var(--color-border, #eee);
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color, #eee);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all var(--transition-fast);
   position: relative;
   user-select: none;
 }
 .cluster-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  box-shadow: var(--card-shadow-hover);
 }
 .cluster-card.is-selected {
-  border-color: var(--color-primary, #7EC8C8);
-  background: var(--color-primary-light, #e6f7f7);
+  border-color: var(--accent, #7EC8C8);
+  background: var(--accent-light, #e6f7f7);
 }
 .card-avatar {
   width: 88px;
   height: 88px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--color-bg-tertiary, #f0f0f0);
+  background: var(--bg-tertiary, #f0f0f0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,7 +287,7 @@ async function onClusterFaces() {
   width: 100%;
 }
 .card-name {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-align: center;
   overflow: hidden;
@@ -294,8 +296,8 @@ async function onClusterFaces() {
   max-width: 100%;
 }
 .card-count {
-  font-size: 11px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary, #999);
 }
 .check-badge {
   position: absolute;
@@ -304,7 +306,7 @@ async function onClusterFaces() {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--color-primary, #7EC8C8);
+  background: var(--accent, #7EC8C8);
   color: #fff;
   display: flex;
   align-items: center;
@@ -312,7 +314,7 @@ async function onClusterFaces() {
 }
 .load-more {
   text-align: center;
-  padding: 12px;
+  padding: var(--space-md);
   flex-shrink: 0;
 }
 </style>

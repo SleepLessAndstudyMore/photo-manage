@@ -101,6 +101,34 @@
       </div>
     </section>
 
+    <!-- 主题设置 -->
+    <section class="settings-section">
+      <div class="section-header">
+        <h3>主题设置</h3>
+      </div>
+      <div class="theme-options">
+        <div
+          v-for="opt in themeOptions"
+          :key="opt.value"
+          class="theme-option"
+          :class="{ 'is-active': currentTheme === opt.value }"
+          @click="setTheme(opt.value)"
+        >
+          <div class="theme-preview" :class="`theme-preview--${opt.value}`">
+            <div class="theme-preview-bar" />
+            <div class="theme-preview-content">
+              <div class="theme-preview-dot" />
+              <div class="theme-preview-lines">
+                <div class="theme-preview-line" />
+                <div class="theme-preview-line short" />
+              </div>
+            </div>
+          </div>
+          <span class="theme-option-label">{{ opt.label }}</span>
+        </div>
+      </div>
+    </section>
+
     <!-- System Config -->
     <section class="settings-section">
       <h3>系统配置</h3>
@@ -153,6 +181,20 @@ const systemStore = useSystemStore()
 const showAddDialog = ref(false)
 const addingLibrary = ref(false)
 const addForm = ref({ name: '', path: '' })
+const currentTheme = ref(localStorage.getItem('theme') || 'system')
+const themeOptions = [
+  { value: 'light', label: '浅色模式' },
+  { value: 'dark', label: '深色模式' },
+  { value: 'system', label: '跟随系统' },
+]
+
+function setTheme(t: string) {
+  currentTheme.value = t
+  localStorage.setItem('theme', t)
+  if (typeof (window as any).__setTheme === 'function') {
+    ;(window as any).__setTheme(t)
+  }
+}
 
 const libraries = computed(() => libraryStore.libraries)
 const scanProgress = computed(() => libraryStore.scanProgress)
@@ -281,42 +323,130 @@ async function saveConfig() {
 .settings-page {
   max-width: 960px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--space-xl);
   overflow-y: auto;
-  height: calc(100vh - 52px);
+  height: 100%;
 }
 .page-title {
-  margin: 0 0 20px;
-  font-size: 20px;
+  margin: 0 0 var(--space-lg);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 .settings-section {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-2xl);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-color);
 }
 .settings-section h3 {
-  margin: 0 0 12px;
-  font-size: 16px;
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-lg);
+  font-weight: 600;
 }
 .settings-section h4 {
-  margin: 12px 0 8px;
-  font-size: 14px;
+  margin: var(--space-md) 0 var(--space-sm);
+  font-size: var(--text-sm);
 }
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-md);
 }
 .section-header h3 {
   margin: 0;
 }
 .empty-hint {
-  padding: 40px 0;
+  padding: var(--space-xl) 0;
 }
-.progress-area {
-  margin-top: 16px;
+
+/* ===== 主题选择 ===== */
+.theme-options {
+  display: flex;
+  gap: var(--space-md);
+}
+.theme-option {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+.theme-option:hover {
+  border-color: var(--border-color-hover);
+}
+.theme-option.is-active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.theme-preview {
+  width: 120px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.theme-preview--light {
+  background: #fff;
+}
+.theme-preview--dark {
+  background: #1E1E1E;
+}
+.theme-preview--system {
+  background: linear-gradient(135deg, #fff 50%, #1E1E1E 50%);
+}
+.theme-preview-bar {
+  height: 16px;
+  background: var(--accent);
+  opacity: 0.2;
+}
+.theme-preview-content {
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.theme-preview-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.theme-preview-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-preview-line {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-color);
+}
+.theme-preview-line.short {
+  width: 60%;
+}
+.theme-option-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.progress-area {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 .progress-item {
   display: flex;
@@ -324,62 +454,64 @@ async function saveConfig() {
   gap: 4px;
 }
 .progress-label {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .progress-msg {
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
 .status-cards {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   flex-wrap: wrap;
 }
 .status-card {
   flex: 1;
-  min-width: 180px;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border, #e8e8e8);
+  min-width: 160px;
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  background: var(--bg-secondary);
 }
 .status-value {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--color-primary, #7EC8C8);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
 .status-label {
-  font-size: 13px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 .tasks-area {
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 .task-item {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--color-border, #eee);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
 }
 .task-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   margin-bottom: 4px;
 }
 .task-msg {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .config-form {
   max-width: 500px;
-  margin-top: 8px;
+  margin-top: var(--space-sm);
 }
 .switch-hint {
-  margin-left: 8px;
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  margin-left: var(--space-sm);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
 </style>

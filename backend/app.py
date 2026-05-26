@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from config.settings import settings
@@ -77,6 +78,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # API 响应启用 gzip 压缩
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
 
     # API routes
     app.include_router(libraries_router)

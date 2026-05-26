@@ -132,48 +132,51 @@ async function onLoadMore() {
 <style scoped>
 .timeline-page {
   display: flex;
-  height: calc(100vh - 52px);
+  height: 100%;
 }
 .timeline-sidebar {
   width: 260px;
   min-width: 260px;
   overflow-y: auto;
-  border-right: 1px solid var(--color-border, #e8e8e8);
-  padding: 16px;
-  background: var(--color-bg-secondary, #fafafa);
+  border-right: 1px solid var(--border-color);
+  padding: var(--space-md);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 .sidebar-title {
-  margin: 0 0 12px;
-  font-size: 15px;
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-base);
   font-weight: 600;
 }
 .sidebar-loading, .sidebar-empty {
-  padding: 20px 0;
+  padding: var(--space-lg) 0;
   text-align: center;
-  color: var(--color-text-secondary, #999);
+  color: var(--text-secondary);
 }
 .timeline-tree {
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .year-item, .month-item, .day-item {
   display: flex;
   align-items: center;
-  padding: 5px 8px;
-  border-radius: 4px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  gap: 4px;
+  gap: var(--space-xs);
+  transition: all var(--transition-fast);
 }
 .year-item:hover, .month-item:hover, .day-item:hover {
-  background: var(--color-bg-hover, #f0f0f0);
+  background: var(--accent-light);
 }
 .year-item.active, .month-item.active, .day-item.active {
-  background: var(--color-primary-light, #e6f7f7);
-  color: var(--color-primary, #7EC8C8);
+  background: var(--accent-light);
+  color: var(--accent);
   font-weight: 600;
 }
 .expand-icon {
-  font-size: 12px;
-  transition: transform 0.2s;
+  font-size: var(--text-xs);
+  transition: all var(--transition-fast);
 }
 .expand-icon.expanded {
   transform: rotate(90deg);
@@ -182,14 +185,14 @@ async function onLoadMore() {
   flex: 1;
 }
 .year-count, .month-count, .day-count {
-  color: var(--color-text-tertiary, #bbb);
-  font-size: 11px;
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
 }
 .months-list {
-  padding-left: 16px;
+  padding-left: var(--space-md);
 }
 .days-list {
-  padding-left: 16px;
+  padding-left: var(--space-md);
 }
 .timeline-content {
   flex: 1;
@@ -198,18 +201,18 @@ async function onLoadMore() {
   overflow: hidden;
 }
 .content-header {
-  padding: 16px 20px 8px;
+  padding: var(--space-md) var(--space-lg) var(--space-sm);
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: var(--space-md);
   flex-shrink: 0;
 }
 .content-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
 }
 .photo-total {
-  color: var(--color-text-secondary, #999);
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 </style>

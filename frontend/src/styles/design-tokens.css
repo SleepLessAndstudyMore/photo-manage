@@ -1,63 +1,153 @@
 :root {
-  /* === 浅色模式 === */
+  /* === 底色 === */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F8F8;
-  --bg-card: rgba(255, 255, 255, 0.7);
-  --bg-card-hover: rgba(255, 255, 255, 0.85);
-  --border-color: #F0F0F0;
-  --border-color-hover: #E0E0E0;
-  --text-primary: #1A1A1A;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
+  --bg-secondary: #F8F8FA;
+  --bg-tertiary: #F0F0F2;
+
+  /* === 毛玻璃卡片 === */
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --card-blur: blur(40px);
+  --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* === 边框 === */
+  --border-color: rgba(0, 0, 0, 0.06);
+  --border-color-hover: rgba(0, 0, 0, 0.12);
+
+  /* === 文字 === */
+  --text-primary: #1D1D1F;
+  --text-secondary: #86868B;
+  --text-tertiary: #AEAEB2;
+
+  /* === 强调色 — 柔和蒂芙尼蓝 === */
   --accent: #7EC8C8;
   --accent-hover: #6BB8B8;
-  --accent-light: rgba(126, 200, 200, 0.1);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.16);
-  --blur-amount: blur(40px);
+  --accent-light: rgba(126, 200, 200, 0.12);
+
+  /* === 渐变光晕 — 增强可见度使毛玻璃效果显现 === */
+  --bg-glow:
+    /* 主光晕 — 蒂芙尼蓝 */
+    radial-gradient(ellipse at 15% 30%, rgba(126, 200, 200, 0.25) 0%, transparent 55%),
+    /* 辅光晕 — 淡紫 */
+    radial-gradient(ellipse at 85% 20%, rgba(200, 180, 255, 0.18) 0%, transparent 50%),
+    /* 暖色光晕 — 右下 */
+    radial-gradient(ellipse at 80% 80%, rgba(255, 220, 180, 0.12) 0%, transparent 50%),
+    /* 冷色光晕 — 左下 */
+    radial-gradient(ellipse at 10% 80%, rgba(180, 220, 255, 0.10) 0%, transparent 50%);
+
+  /* === 网格点阵纹理（毛玻璃背后的视觉深度层） === */
+  --bg-dots: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  --bg-dots-size: 24px 24px;
+
+  /* === 字体 === */
+  --font-sans: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "SF Pro Display", "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "Consolas", monospace;
+
+  /* === 字号层级 === */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 40px;
+
+  /* === 间距系统（大呼吸感） === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* === 圆角 === */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
-  --font-family: "PingFang SC", "Microsoft YaHei", "SF Pro Display", "Helvetica Neue", sans-serif;
-  --font-size-xs: 12px;
-  --font-size-sm: 13px;
-  --font-size-md: 14px;
-  --font-size-lg: 16px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 28px;
-  --font-size-3xl: 36px;
+
+  /* === 过渡 === */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* === 滚动条 === */
   --scrollbar-width: 6px;
   --scrollbar-color: rgba(0, 0, 0, 0.2);
   --scrollbar-color-hover: rgba(0, 0, 0, 0.4);
+
+  /* === 阴影 === */
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  /* === 旧变量兼容 === */
+  --font-family: var(--font-sans);
+  --font-size-xs: var(--text-xs);
+  --font-size-sm: var(--text-sm);
+  --font-size-md: var(--text-base);
+  --font-size-lg: var(--text-lg);
+  --font-size-xl: var(--text-xl);
+  --font-size-2xl: var(--text-2xl);
+  --font-size-3xl: var(--text-3xl);
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+  --spacing-2xl: var(--space-2xl);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
+  --blur-amount: var(--card-blur);
 }
 
 [data-theme="dark"] {
-  --bg-primary: #1E1E1E;
-  --bg-secondary: #252525;
-  --bg-card: rgba(30, 30, 30, 0.7);
-  --bg-card-hover: rgba(40, 40, 40, 0.85);
-  --border-color: #333333;
-  --border-color-hover: #444444;
-  --text-primary: #E8E8E8;
-  --text-secondary: #999999;
-  --text-tertiary: #666666;
+  /* 底色 */
+  --bg-primary: #1A1A1E;
+  --bg-secondary: #242428;
+  --bg-tertiary: #2E2E32;
+
+  /* 边框 */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.15);
+
+  /* 文字 */
+  --text-primary: #F5F5F7;
+  --text-secondary: #A1A1A6;
+  --text-tertiary: #6E6E73;
+
+  /* 强调色 */
   --accent: #7EC8C8;
-  --accent-hover: #8ED8D8;
+  --accent-hover: #92D6D6;
   --accent-light: rgba(126, 200, 200, 0.15);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.4);
+
+  /* 毛玻璃卡片 — 模拟发光体光影溢出 */
+  --card-bg: rgba(26, 26, 30, 0.65);
+  --card-blur: blur(60px);
+  --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* 渐变光晕 — 深色下发光感更强 */
+  --bg-glow:
+    radial-gradient(ellipse at 15% 30%, rgba(126, 200, 200, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(200, 180, 255, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255, 200, 150, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 80%, rgba(100, 180, 255, 0.06) 0%, transparent 50%);
+
+  /* 深色点阵 */
+  --bg-dots: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+
+  /* 滚动条 */
   --scrollbar-color: rgba(255, 255, 255, 0.2);
   --scrollbar-color-hover: rgba(255, 255, 255, 0.4);
+
+  /* 阴影 */
+  --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.5);
 }

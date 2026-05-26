@@ -174,3 +174,23 @@ async def delete_photo_file(photo_id: int, session: Session = Depends(get_sessio
     session.add(photo)
     session.commit()
     return None
+
+
+@router.post("/system/vacuum")
+async def vacuum_database():
+    """VACUUM the database and optimize. Run periodically."""
+    from backend.database import vacuum_database as _vacuum
+
+    ok = _vacuum()
+    if not ok:
+        raise HTTPException(status_code=500, detail="数据库压缩失败")
+    return {"message": "数据库压缩完成"}
+
+
+@router.get("/system/db-check")
+async def check_database():
+    """Check database integrity."""
+    from backend.database import check_database_integrity
+
+    issues = check_database_integrity()
+    return {"ok": len(issues) == 0, "issues": issues}

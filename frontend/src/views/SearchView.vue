@@ -305,23 +305,26 @@ function formatDate(dateStr: string) {
 
 <style scoped>
 .view-search {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: var(--space-xl);
 }
 .search-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-lg);
   flex-shrink: 0;
 }
-.search-header h2 { margin: 0; }
+.search-header h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+}
 .search-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-md);
 }
 .search-body {
   flex: 1;
@@ -331,18 +334,21 @@ function formatDate(dateStr: string) {
 }
 .hybrid-input-row {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 .search-hint {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  margin-top: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 .structured-filters {
-  padding: 16px;
-  background: var(--color-bg-secondary, #fafafa);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  padding: var(--space-lg);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
   flex-shrink: 0;
 }
 .search-results {
@@ -357,33 +363,34 @@ function formatDate(dateStr: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary, #999);
-  gap: 12px;
+  color: var(--text-secondary);
+  gap: var(--space-md);
 }
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  gap: var(--space-md);
   overflow-y: auto;
   flex: 1;
 }
 .result-item {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-bg-secondary, #f5f5f5);
-  transition: transform 0.15s, box-shadow 0.15s;
+  background: var(--bg-secondary);
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-fast);
 }
 .result-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--card-shadow-hover);
 }
 .result-item img {
   width: 100%;
@@ -396,16 +403,16 @@ function formatDate(dateStr: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  color: var(--text-tertiary);
 }
 .result-info {
-  padding: 8px;
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 .result-name {
-  font-size: 12px;
+  font-size: var(--text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -417,20 +424,20 @@ function formatDate(dateStr: string) {
   flex-wrap: wrap;
 }
 .result-date {
-  font-size: 11px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 .result-score {
-  font-size: 11px;
-  color: var(--color-primary, #7EC8C8);
+  font-size: var(--text-sm);
+  color: var(--accent);
   font-weight: 500;
-  background: var(--color-primary-light, #e6f7f7);
+  background: var(--accent-light);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .results-more {
   text-align: center;
-  padding: 12px;
+  padding: var(--space-md);
   flex-shrink: 0;
 }
 </style>

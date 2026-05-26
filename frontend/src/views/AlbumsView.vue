@@ -107,8 +107,8 @@ async function handleCreate() {
 
 <style scoped>
 .view-albums {
-  height: calc(100vh - 52px);
-  padding: 20px;
+  height: 100%;
+  padding: var(--space-xl);
   display: flex;
   flex-direction: column;
 }
@@ -116,10 +116,13 @@ async function handleCreate() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
-.albums-header h2 { margin: 0; }
+.albums-header h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+}
 .albums-loading { padding: 40px; }
 .albums-empty {
   flex: 1;
@@ -127,32 +130,35 @@ async function handleCreate() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary, #999);
-  gap: 12px;
+  color: var(--text-secondary);
+  gap: var(--space-md);
 }
 .albums-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  gap: var(--space-md);
   overflow-y: auto;
 }
 .album-card {
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-bg-primary, #fff);
-  border: 1px solid var(--color-border, #eee);
-  transition: transform 0.15s, box-shadow 0.15s;
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-fast);
 }
 .album-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-shadow: var(--card-shadow-hover);
 }
 .album-cover {
   aspect-ratio: 16/9;
   overflow: hidden;
-  background: var(--color-bg-secondary, #f5f5f5);
+  background: var(--bg-secondary);
 }
 .album-cover img {
   width: 100%;
@@ -165,23 +171,23 @@ async function handleCreate() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  color: var(--text-tertiary);
 }
 .album-info {
-  padding: 12px;
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 .album-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-base);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .album-count {
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 </style>

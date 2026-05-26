@@ -20,9 +20,10 @@ _model_lock = threading.Lock()
 _model_load_attempted = False
 
 
-def _try_load_model(timeout: float = 5.0) -> bool:
-    """Try to load the CLIP model with a timeout.
+def _try_load_model(timeout: float = 30.0, max_retries: int = 3) -> bool:
+    """Try to load the CLIP model with retry support.
 
+    Retries up to `max_retries` times on network failure.
     Returns True if loaded successfully, False if failed or timed out.
     Only attempts download once; subsequent calls return immediately.
     """
@@ -41,40 +42,57 @@ def _try_load_model(timeout: float = 5.0) -> bool:
 
         _model_load_attempted = True  # Mark before attempt to avoid re-entry
 
-        result = [None]
-        exception = [None]
-        event = threading.Event()
+        for attempt in range(1, max_retries + 1):
+            result = [None]
+            exception = [None]
+            event = threading.Event()
 
-        def _load():
-            try:
-                from sentence_transformers import SentenceTransformer
-                result[0] = SentenceTransformer("clip-ViT-B-32")
-                logger.info("CLIP model loaded (clip-ViT-B-32)")
-            except Exception as e:
-                exception[0] = e
-            finally:
-                event.set()
+            def _load():
+                try:
+                    from sentence_transformers import SentenceTransformer
+                    result[0] = SentenceTransformer("clip-ViT-B-32")
+                    logger.info("CLIP model loaded (clip-ViT-B-32)")
+                except Exception as e:
+                    exception[0] = e
+                finally:
+                    event.set()
 
-        t = threading.Thread(target=_load, daemon=True)
-        t.start()
-        loaded = event.wait(timeout=timeout)
+            t = threading.Thread(target=_load, daemon=True)
+            t.start()
+            loaded = event.wait(timeout=timeout)
 
-        if loaded and result[0] is not None:
-            _model = result[0]
-            return True
-        elif loaded and exception[0] is not None:
-            logger.warning(
-                f"Failed to load CLIP model: {exception[0]}. "
-                "Semantic search will be unavailable."
-            )
-        else:
-            logger.warning(
-                f"CLIP model download timed out after {timeout}s. "
-                "Semantic search will be unavailable. "
-                "Run offline: python -c \"from sentence_transformers import "
-                "SentenceTransformer; SentenceTransformer('clip-ViT-B-32')\""
-            )
-        return False
+            if loaded and result[0] is not None:
+                _model = result[0]
+                return True
+            elif loaded and exception[0] is not None:
+                if attempt < max_retries:
+                    logger.warning(
+                        f"CLIP model download attempt {attempt}/{max_retries} failed: "
+                        f"{exception[0]}. Retrying..."
+                    )
+                    import time
+                    time.sleep(2)
+                    continue
+                logger.warning(
+                    f"Failed to load CLIP model after {max_retries} attempts: "
+                    f"{exception[0]}. Semantic search will be unavailable."
+                )
+            else:
+                if attempt < max_retries:
+                    logger.warning(
+                        f"CLIP model download timed out after {timeout}s "
+                        f"(attempt {attempt}/{max_retries}). Retrying..."
+                    )
+                    import time
+                    time.sleep(2)
+                    continue
+                logger.warning(
+                    f"CLIP model download timed out after {max_retries} attempts. "
+                    "Semantic search will be unavailable. "
+                    "Run offline: python -c \"from sentence_transformers import "
+                    "SentenceTransformer; SentenceTransformer('clip-ViT-B-32')\""
+                )
+            return False
 
 
 def _get_model():

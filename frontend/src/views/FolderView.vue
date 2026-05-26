@@ -106,39 +106,47 @@ async function onLoadMore() {
 .folder-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 52px);
+  height: 100%;
 }
 .folder-toolbar {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
-  gap: 16px;
-  border-bottom: 1px solid var(--color-border, #e8e8e8);
+  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 .folders-grid {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: var(--space-lg);
 }
 .folder-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--space-md);
 }
 .folder-card {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--color-border, #e8e8e8);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: all var(--transition-fast);
+  box-shadow: var(--card-shadow);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 .folder-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 .folder-cover {
   height: 140px;
-  background: var(--color-bg-secondary, #f0f0f0);
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,19 +158,19 @@ async function onLoadMore() {
   object-fit: cover;
 }
 .folder-info {
-  padding: 10px 12px;
+  padding: var(--space-sm) var(--space-md);
 }
 .folder-name {
   display: block;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .folder-count {
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 .aggregate-content {
   flex: 1;
@@ -173,14 +181,17 @@ async function onLoadMore() {
 .current-folder-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: var(--color-bg-secondary, #fafafa);
-  font-size: 13px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  font-size: var(--text-sm);
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
 }
 .loading-wrap, .empty-wrap {
-  padding: 40px;
+  padding: var(--space-xl);
   text-align: center;
 }
 </style>

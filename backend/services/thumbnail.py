@@ -90,6 +90,39 @@ class ThumbnailGenerator:
     def _generate_image_thumbnail(
         self, source_path: str, output_path: Path, max_side: int, quality: int = 80
     ) -> tuple[int | None, int | None]:
+        # 超大文件超时保护（>100MB 设置 30s 超时）
+        import os as _os
+        try:
+            # 磁盘空间检测
+            dest_dir = output_path.parent
+            try:
+                if hasattr(_os, 'statvfs'):
+                    stat = _os.statvfs(dest_dir)
+                    free_mb = (stat.f_frsize * stat.f_bavail) / (1024 * 1024)
+                    if free_mb < 100:
+                        logger.warning(f"Low disk space ({free_mb:.0f}MB free), thumbnail generation paused")
+                        return None, None
+            except Exception:
+                pass  # Disk check not available on all platforms
+
+            file_size_mb = _os.path.getsize(source_path) / (1024 * 1024)
+            timeout = 30 if file_size_mb > 100 else 10
+
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self._do_generate_thumbnail, source_path, output_path, max_side, quality)
+                try:
+                    return future.result(timeout=timeout)
+                except concurrent.futures.TimeoutError:
+                    logger.warning(f"Thumbnail generation timed out ({timeout}s) for large file: {source_path} ({file_size_mb:.0f}MB)")
+                    return None, None
+        except Exception as e:
+            logger.warning(f"Image thumbnail failed for {source_path}: {e}")
+            return None, None
+
+    def _do_generate_thumbnail(
+        self, source_path: str, output_path: Path, max_side: int, quality: int
+    ) -> tuple[int | None, int | None]:
         try:
             img = Image.open(source_path)
             img = ImageOps.exif_transpose(img)
@@ -99,7 +132,7 @@ class ThumbnailGenerator:
             w, h = rgb.size
             return w, h
         except Exception as e:
-            logger.warning(f"Image thumbnail failed for {source_path}: {e}")
+            logger.warning(f"Image thumbnail processing failed for {source_path}: {e}")
             return None, None
 
     def _generate_video_thumbnail(

@@ -174,24 +174,28 @@ async function handleDeleteAlbum() {
 
 <style scoped>
 .album-detail-page {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 20px;
+  padding: 0 var(--space-xl);
 }
 .album-toolbar {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  gap: 12px;
-  border-bottom: 1px solid var(--color-border, #e8e8e8);
+  padding: var(--space-md) 0;
+  gap: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
-.album-title { flex: 1; font-size: 16px; font-weight: 600; }
+.album-title {
+  flex: 1;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
 .album-desc {
-  padding: 12px 0;
-  color: var(--color-text-secondary, #666);
-  font-size: 13px;
+  padding: var(--space-md) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
   flex-shrink: 0;
 }
 .album-loading { padding: 40px; }
@@ -201,24 +205,32 @@ async function handleDeleteAlbum() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary, #999);
-  gap: 12px;
+  color: var(--text-secondary);
+  gap: var(--space-md);
 }
 .album-photos-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  gap: var(--space-md);
   overflow-y: auto;
-  padding: 16px 0;
+  padding: var(--space-md) 0;
 }
 .album-photo-item {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
   aspect-ratio: 1;
-  background: var(--color-bg-secondary, #f5f5f5);
+  background: var(--bg-secondary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+.album-photo-item:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 .album-photo-item img {
   width: 100%;
@@ -231,14 +243,14 @@ async function handleDeleteAlbum() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  color: var(--text-tertiary);
 }
 .photo-overlay {
   position: absolute;
   top: 6px;
   right: 6px;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: all var(--transition-fast);
 }
 .album-photo-item:hover .photo-overlay {
   opacity: 1;

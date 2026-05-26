@@ -171,63 +171,78 @@ function formatSize(bytes: number) {
 
 <style scoped>
 .view-duplicates {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: var(--space-lg);
 }
 .dup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
 .dup-header h2 { margin: 0; }
-.dup-actions { display: flex; align-items: center; gap: 12px; }
-.dup-loading { padding: 40px; }
+.dup-actions { display: flex; align-items: center; gap: var(--space-md); }
+.dup-loading { padding: var(--space-xl); }
 .dup-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary, #999);
-  gap: 12px;
+  color: var(--text-secondary, #999);
+  gap: var(--space-md);
 }
 .dup-list {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
-.dup-card { flex-shrink: 0; }
+.dup-card {
+  --el-card-bg-color: transparent;
+  --el-card-border-color: var(--border-color);
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+.dup-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
 .dup-card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
-.dup-msg { flex: 1; font-size: 13px; color: var(--color-text-secondary, #666); }
+.dup-msg { flex: 1; font-size: var(--text-sm); color: var(--text-secondary, #666); }
 .dup-photos-row {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
   overflow-x: auto;
   padding-bottom: 8px;
 }
 .dup-photo-item {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   width: 140px;
   flex-shrink: 0;
-  background: var(--color-bg-secondary, #f5f5f5);
+  background: var(--bg-secondary, #f5f5f5);
   border: 2px solid transparent;
-  transition: border-color 0.15s;
+  transition: all var(--transition-fast);
 }
 .dup-photo-item.selected {
-  border-color: var(--color-primary, #7EC8C8);
+  border-color: var(--accent, #7EC8C8);
+}
+.dup-photo-item:hover {
+  box-shadow: var(--card-shadow);
 }
 .dup-photo-item img {
   width: 100%;
@@ -249,18 +264,18 @@ function formatSize(bytes: number) {
   gap: 2px;
 }
 .dup-photo-name {
-  font-size: 11px;
+  font-size: var(--text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .dup-photo-size {
-  font-size: 10px;
-  color: var(--color-text-secondary, #999);
+  font-size: var(--text-sm);
+  color: var(--text-secondary, #999);
 }
 .compare-row {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -268,7 +283,7 @@ function formatSize(bytes: number) {
 .compare-item img {
   max-width: 300px;
   max-height: 300px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
-.compare-name { margin-top: 8px; font-size: 12px; }
+.compare-name { margin-top: 8px; font-size: var(--text-sm); }
 </style>

@@ -150,22 +150,32 @@ function goToPhoto(id?: number) {
 
 <style scoped>
 .view-map {
-  height: calc(100vh - 52px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 .map-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
   flex-shrink: 0;
 }
-.map-header h2 { margin: 0; }
-.map-count { font-size: 13px; color: var(--color-text-secondary, #999); }
+.map-header h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+}
+.map-count {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
 .map-container {
   flex: 1;
   position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin: 0 var(--space-xl) var(--space-xl);
+  overflow: hidden;
 }
 .map-leaflet {
   width: 100%;
@@ -178,14 +188,16 @@ function goToPhoto(id?: number) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-primary, #fff);
+  background: var(--bg-primary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 1000;
   gap: 8px;
 }
 .preview-image {
   max-width: 400px;
   max-height: 400px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .preview-placeholder {
   width: 300px;
@@ -193,8 +205,8 @@ function goToPhoto(id?: number) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
-  border-radius: 8px;
-  color: #999;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
 }
 </style>

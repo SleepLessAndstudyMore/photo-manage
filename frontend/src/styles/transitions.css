@@ -1,3 +1,4 @@
+/* 页面过渡 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity var(--transition-normal);
@@ -7,6 +8,7 @@
   opacity: 0;
 }
 
+/* 上滑进入 */
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: all var(--transition-normal);
@@ -18,4 +20,36 @@
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* 缩放进入 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* 抽屉滑入 */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(100%);
+}
+
+/* 悬浮显现 */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
 }

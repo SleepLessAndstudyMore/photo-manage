@@ -2,17 +2,15 @@
   <div class="exif-panel">
     <div class="exif-header">
       <h3>EXIF 信息</h3>
-      <el-button size="small" text @click="copyAll">复制全部</el-button>
+      <button class="pill-btn" @click="copyAll">复制全部</button>
     </div>
     <div v-if="loading" class="loading-wrap">
-      <el-skeleton :rows="6" animated />
+      <el-skeleton :rows="8" animated />
     </div>
     <div v-else-if="exif" class="exif-list">
       <div v-for="row in exifRows" :key="row.label" class="exif-row">
         <span class="exif-label">{{ row.label }}</span>
-        <span class="exif-value">
-          {{ row.value }}
-        </span>
+        <span class="exif-value">{{ row.value }}</span>
       </div>
     </div>
     <div v-else class="empty-wrap">
@@ -29,10 +27,6 @@ import type { PhotoExif } from '@/types/photo'
 const props = defineProps<{
   exif: PhotoExif | null
   loading?: boolean
-}>()
-
-const emit = defineEmits<{
-  'gps-click': []
 }>()
 
 function formatFileSize(bytes: number): string {
@@ -58,8 +52,6 @@ function formatOrientation(val: number): string {
 interface ExifRow {
   label: string
   value: string
-  clickable?: boolean
-  onClick?: () => void
 }
 
 const exifRows = computed<ExifRow[]>(() => {
@@ -71,16 +63,16 @@ const exifRows = computed<ExifRow[]>(() => {
     { label: '镜头型号', value: e.lens_model || '未知' },
     { label: '光圈', value: e.f_number ? `f/${e.f_number}` : '未知' },
     { label: '快门速度', value: e.exposure_time || '未知' },
-    { label: 'ISO 感光度', value: e.iso ? String(e.iso) : '未知' },
+    { label: 'ISO', value: e.iso ? String(e.iso) : '未知' },
     { label: '焦距', value: e.focal_length ? `${e.focal_length}mm` : '未知' },
     {
-      label: 'GPS 位置',
+      label: 'GPS',
       value: e.gps_latitude != null && e.gps_longitude != null
         ? `${e.gps_latitude.toFixed(4)}, ${e.gps_longitude.toFixed(4)}`
         : '未知',
     },
     { label: '拍摄时间', value: e.date_taken ? new Date(e.date_taken).toLocaleString('zh-CN') : '未知' },
-    { label: '图片尺寸', value: e.width && e.height ? `${e.width} × ${e.height}` : '未知' },
+    { label: '尺寸', value: e.width && e.height ? `${e.width} × ${e.height}` : '未知' },
     { label: '文件大小', value: formatFileSize(e.file_size) },
     { label: '方向', value: formatOrientation(e.orientation) },
   ]
@@ -100,47 +92,53 @@ function copyAll() {
 
 <style scoped>
 .exif-panel {
-  padding: 12px 0;
+  padding: var(--space-sm) 0;
 }
+
 .exif-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-md);
 }
+
 .exif-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-lg);
+  font-weight: 600;
 }
+
 .exif-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
+
 .exif-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--color-border, #eee);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
 }
+
 .exif-label {
   flex-shrink: 0;
-  color: var(--color-text-secondary, #888);
-  font-size: 13px;
-  width: 80px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  width: 70px;
 }
+
 .exif-value {
   text-align: right;
-  font-size: 13px;
-  color: var(--color-text-primary, #333);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
   word-break: break-all;
+  font-weight: 450;
 }
-.exif-value.clickable {
-  color: var(--color-primary, #7EC8C8);
-  cursor: pointer;
-}
+
 .loading-wrap, .empty-wrap {
-  padding: 20px 0;
+  padding: var(--space-lg) 0;
+  text-align: center;
 }
 </style>
