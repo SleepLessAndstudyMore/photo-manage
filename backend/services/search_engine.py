@@ -178,12 +178,11 @@ def hybrid_search(
     *,
     page: int = 1,
     page_size: int = 50,
-) -> tuple[list[Photo], int]:
-    """Hybrid search: NLP entity extraction + structured filter.
+) -> tuple[list[tuple[Photo, float]] | list[Photo], int]:
+    """Hybrid search: NLP entity extraction + CLIP semantic vector search + structured filter.
 
-    Note: CLIP semantic vector search is implemented in S3. In S2, hybrid search
-    extracts time entities and tag entities from the query, then applies structured
-    filters. Semantic results will be merged in S3.
+    Returns list of (Photo, similarity_score) tuples when CLIP is available,
+    falling back to plain Photo list when CLIP is unavailable.
     """
     filters = {}
 
@@ -196,9 +195,57 @@ def hybrid_search(
     if tag_ids:
         filters["tag_ids"] = tag_ids
 
-    # Step 3: Apply structured search with extracted filters
-    # In S3: CLIP vector search results will be merged here
-    return structured_search(
+    # Step 3: CLIP semantic vector search (S3)
+    clip_photo_ids: set[int] | None = None
+    clip_scores: dict[int, float] = {}
+    try:
+        from backend.services.clip_service import ClipService
+
+        clip = ClipService()
+        text_emb = clip.generate_text_embedding(query)
+        if text_emb is not None:
+            vector_results = clip.search_similar(text_emb, session, top_k=200)
+            if vector_results:
+                clip_photo_ids = {pid for pid, _ in vector_results}
+                clip_scores = dict(vector_results)
+    except Exception as e:
+        logger.warning(f"CLIP search failed, falling back to structured: {e}")
+
+    # Step 4: If CLIP matched, intersect with structured filters
+    if clip_photo_ids:
+        # Apply structured filters on the CLIP candidate set
+        base = select(Photo).where(
+            Photo.file_missing == False,  # noqa: E712
+            Photo.id.in_(clip_photo_ids),
+        )
+
+        conditions = _build_filter_conditions(filters)
+        if conditions:
+            base = base.where(*conditions)
+
+        count_q = select(func.count()).select_from(base.subquery())
+        total = session.exec(count_q).one()
+
+        photos = session.exec(base.all()).all()
+
+        # Sort by similarity score descending
+        photos_with_scores = [(p, clip_scores.get(p.id, 0.0)) for p in photos]
+        photos_with_scores.sort(key=lambda x: x[1], reverse=True)
+
+        # Paginate
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_photos = photos_with_scores[start:end]
+
+        return page_photos, total
+
+    # Step 5: Fallback — no CLIP, apply structured only
+    if not filters:
+        keyword = query.strip()
+        if keyword:
+            filters["file_name"] = keyword
+
+    photos, total = structured_search(
         session,
         filters=filters or None,
         logic="AND",
@@ -207,3 +254,42 @@ def hybrid_search(
         page=page,
         page_size=page_size,
     )
+    return photos, total
+
+
+def _build_filter_conditions(filters: dict) -> list:
+    """Build SQLAlchemy conditions from structured filters dict."""
+    from sqlmodel import or_
+    from backend.models.photo_tag import PhotoTag
+
+    conditions = []
+    if filters.get("date_from"):
+        conditions.append(Photo.date_taken >= filters["date_from"])
+    if filters.get("date_to"):
+        conditions.append(Photo.date_taken <= filters["date_to"])
+    if filters.get("camera_make"):
+        conditions.append(Photo.camera_make == filters["camera_make"])
+    if filters.get("camera_model"):
+        conditions.append(Photo.camera_model == filters["camera_model"])
+    if filters.get("lens_model"):
+        conditions.append(Photo.lens_model == filters["lens_model"])
+    if filters.get("rating_min"):
+        conditions.append(Photo.rating >= filters["rating_min"])
+    if filters.get("is_favorite"):
+        conditions.append(Photo.is_favorite == True)  # noqa: E712
+    if filters.get("has_gps"):
+        conditions.append(Photo.gps_latitude.is_not(None))
+    if filters.get("file_name"):
+        conditions.append(Photo.file_name.ilike(f"%{filters['file_name']}%"))
+
+    tag_ids = filters.get("tag_ids", [])
+    if tag_ids:
+        subq = (
+            select(PhotoTag.photo_id)
+            .where(PhotoTag.tag_id.in_(tag_ids))
+            .group_by(PhotoTag.photo_id)
+            .having(func.count(PhotoTag.tag_id) == len(tag_ids))
+        )
+        conditions.append(Photo.id.in_(subq))
+
+    return conditions

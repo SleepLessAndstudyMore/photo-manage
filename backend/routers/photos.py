@@ -203,12 +203,13 @@ async def get_gps_photos(
     return {"items": items, "total": len(items)}
 
 
-@router.post("/search", response_model=PhotoListResponse)
+@router.post("/search")
 async def search_photos(
     body: dict,
     session: Session = Depends(get_session),
 ):
     from backend.services.search_engine import structured_search, hybrid_search
+    from backend.schemas.search import SearchResponse, SearchResultItem
 
     mode = body.get("mode", "structured")
     page = body.get("page", 1)
@@ -216,9 +217,31 @@ async def search_photos(
 
     if mode == "hybrid":
         query = body.get("query", "")
-        photos, total = hybrid_search(
+        result = hybrid_search(
             session,
             query=query,
+            page=page,
+            page_size=page_size,
+        )
+        if not result:
+            return SearchResponse(items=[], total=0, page=page, page_size=page_size)
+
+        items_or_photos, total = result
+
+        if items_or_photos and isinstance(items_or_photos[0], tuple):
+            # CLIP-enhanced results: list of (Photo, score)
+            items = []
+            for photo, score in items_or_photos:
+                item = SearchResultItem.model_validate(photo)
+                item.similarity_score = round(score, 4)
+                items.append(item)
+        else:
+            # Fallback: plain Photo list
+            items = [SearchResultItem.model_validate(p) for p in items_or_photos]
+
+        return SearchResponse(
+            items=items,
+            total=total,
             page=page,
             page_size=page_size,
         )
@@ -233,12 +256,12 @@ async def search_photos(
             page_size=page_size,
         )
 
-    return PhotoListResponse(
-        items=[PhotoResponse.model_validate(p) for p in photos],
-        total=total,
-        page=page,
-        page_size=page_size,
-    )
+        return SearchResponse(
+            items=[SearchResultItem.model_validate(p) for p in photos],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
 
 
 @router.get("/duplicates")
@@ -261,6 +284,23 @@ async def get_duplicates(
     return result
 
 
+@router.post("/embeddings")
+async def generate_embeddings():
+    """Trigger CLIP embedding generation for all photos without embeddings."""
+    from backend.database import engine as _engine
+    from sqlmodel import Session as _Session
+    from backend.services.clip_service import ClipService
+    from backend.tasks.task_manager import task_manager, TaskType
+
+    svc = ClipService(lambda: _Session(_engine))
+    task_id = task_manager.create_and_run(
+        TaskType.CLIP,
+        svc.generate_all_embeddings,
+        args=(),
+    )
+    return {"message": "CLIP 向量生成任务已启动", "task_id": task_id}
+
+
 # ---- Parameterized photo routes ---- #
 
 @router.get("/{photo_id}", response_model=PhotoDetailResponse)
@@ -269,8 +309,7 @@ async def get_photo(photo_id: int, session: Session = Depends(get_session)):
     if not photo:
         raise HTTPException(status_code=404, detail="照片不存在")
 
-    resp = PhotoDetailResponse.model_validate(photo)
-    # Populate tags
+    # Populate tags via explicit join (avoid eager relationship validation)
     tags_data = []
     pts = session.exec(
         select(PhotoTag, Tag)
@@ -286,6 +325,10 @@ async def get_photo(photo_id: int, session: Session = Depends(get_session)):
             confidence=pt.confidence,
             source=pt.source,
         ))
+
+    # Clear relationship to prevent pydantic from validating raw PhotoTag objects
+    photo_data = {col: getattr(photo, col) for col in photo.model_dump()}
+    resp = PhotoDetailResponse.model_validate(photo_data)
     resp.tags = tags_data
     return resp
 

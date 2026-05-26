@@ -49,6 +49,12 @@ const routes = [
     meta: { title: '相册详情' },
   },
   {
+    path: '/people/:id',
+    name: 'people-detail',
+    component: () => import('@/views/PeopleDetailView.vue'),
+    meta: { title: '人物详情' },
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),

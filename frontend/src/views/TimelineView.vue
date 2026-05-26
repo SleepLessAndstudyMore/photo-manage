@@ -93,6 +93,7 @@ const loading = computed(() => photoStore.loading)
 
 onMounted(async () => {
   await photoStore.fetchTimeline()
+  await photoStore.fetchPhotos({ page: 1, page_size: 50 })
 })
 
 function toggleYear(year: number) {

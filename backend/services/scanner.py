@@ -115,6 +115,28 @@ class Scanner:
                     args=(new_photo_ids, new_source_paths, new_is_videos),
                     library_id=library_id,
                 )
+
+            # Submit CLIP embedding generation (S3)
+            if new_photo_ids:
+                from backend.services.clip_service import ClipService
+                clip_svc = ClipService(self._session_factory)
+                task_manager.create_and_run(
+                    TaskType.CLIP,
+                    clip_svc.generate_all_embeddings,
+                    args=(new_photo_ids, new_source_paths, new_is_videos),
+                    library_id=library_id,
+                )
+
+            # Submit face detection (S3)
+            if new_photo_ids:
+                from backend.services.face_service import FaceService
+                face_svc = FaceService(self._session_factory)
+                task_manager.create_and_run(
+                    TaskType.FACE_DETECT,
+                    face_svc.detect_all_faces,
+                    args=(new_photo_ids, new_source_paths, new_is_videos),
+                    library_id=library_id,
+                )
         finally:
             session.close()
 

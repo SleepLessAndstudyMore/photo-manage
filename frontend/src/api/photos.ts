@@ -31,3 +31,11 @@ export function getGpsPhotos(params?: Record<string, unknown>) {
 export function streamVideo(id: number) {
   return client.get(`/photos/${id}/stream`)
 }
+
+export function deletePhotoFile(id: number) {
+  return client.post(`/system/delete-photo/${id}`)
+}
+
+export function generateEmbeddings() {
+  return client.post('/photos/embeddings')
+}

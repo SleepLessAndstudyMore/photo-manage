@@ -2,11 +2,16 @@
   <div class="view-search">
     <div class="search-header">
       <h2>搜索</h2>
-      <div class="search-mode-tabs">
-        <el-radio-group v-model="searchMode" size="small">
-          <el-radio-button value="structured">结构化搜索</el-radio-button>
-          <el-radio-button value="hybrid">自然语言搜索</el-radio-button>
-        </el-radio-group>
+      <div class="search-header-actions">
+        <div class="search-mode-tabs">
+          <el-radio-group v-model="searchMode" size="small">
+            <el-radio-button value="structured">结构化搜索</el-radio-button>
+            <el-radio-button value="hybrid">自然语言搜索</el-radio-button>
+          </el-radio-group>
+        </div>
+        <el-button size="small" text :loading="embeddingLoading" @click="onGenerateEmbeddings">
+          生成向量
+        </el-button>
       </div>
     </div>
 
@@ -39,6 +44,9 @@
             </el-form-item>
             <el-form-item label="相机型号">
               <el-input v-model="structuredFilters.camera_model" placeholder="如: Sony A7M4" clearable />
+            </el-form-item>
+            <el-form-item label="镜头">
+              <el-input v-model="structuredFilters.lens_model" placeholder="如: FE 24-70mm" clearable />
             </el-form-item>
             <el-form-item label="日期从">
               <el-date-picker v-model="structuredFilters.date_from" type="date" value-format="YYYY-MM-DD" />
@@ -113,9 +121,14 @@
               </div>
               <div class="result-info">
                 <span class="result-name">{{ photo.file_name }}</span>
-                <span v-if="photo.date_taken" class="result-date">
-                  {{ formatDate(photo.date_taken) }}
-                </span>
+                <div class="result-meta">
+                  <span v-if="photo.date_taken" class="result-date">
+                    {{ formatDate(photo.date_taken) }}
+                  </span>
+                  <span v-if="searchMode === 'hybrid' && photo.similarity_score != null" class="result-score">
+                    {{ (photo.similarity_score * 100).toFixed(0) }}% 匹配
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -132,7 +145,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, PictureFilled } from '@element-plus/icons-vue'
-import { searchPhotos } from '@/api/photos'
+import { searchPhotos, generateEmbeddings } from '@/api/photos'
 import { getTags } from '@/api/tags'
 
 interface PhotoItem {
@@ -140,6 +153,7 @@ interface PhotoItem {
   file_name: string
   date_taken: string | null
   thumbnail_path: string | null
+  similarity_score?: number
 }
 
 interface TagItem {
@@ -155,6 +169,7 @@ const hybridQuery = ref('')
 const allTags = ref<TagItem[]>([])
 const searching = ref(false)
 const searched = ref(false)
+const embeddingLoading = ref(false)
 const results = ref<PhotoItem[]>([])
 const total = ref(0)
 const currentPage = ref(1)
@@ -163,6 +178,7 @@ const sortBy = ref('date_taken')
 const structuredFilters = reactive({
   file_name: '',
   camera_model: '',
+  lens_model: '',
   date_from: null,
   date_to: null,
   tag_ids: [] as number[],
@@ -199,6 +215,7 @@ async function doSearch() {
       const filters: Record<string, unknown> = {}
       if (structuredFilters.file_name) filters.file_name = structuredFilters.file_name
       if (structuredFilters.camera_model) filters.camera_model = structuredFilters.camera_model
+      if (structuredFilters.lens_model) filters.lens_model = structuredFilters.lens_model
       if (structuredFilters.date_from) filters.date_from = structuredFilters.date_from
       if (structuredFilters.date_to) filters.date_to = structuredFilters.date_to
       if (structuredFilters.tag_ids.length) filters.tag_ids = structuredFilters.tag_ids
@@ -267,6 +284,15 @@ async function loadMore() {
   }
 }
 
+async function onGenerateEmbeddings() {
+  embeddingLoading.value = true
+  try {
+    await generateEmbeddings()
+  } finally {
+    embeddingLoading.value = false
+  }
+}
+
 function goToPhoto(id: number) {
   router.push(`/photos/${id}`)
 }
@@ -292,6 +318,11 @@ function formatDate(dateStr: string) {
   flex-shrink: 0;
 }
 .search-header h2 { margin: 0; }
+.search-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .search-body {
   flex: 1;
   display: flex;
@@ -379,9 +410,23 @@ function formatDate(dateStr: string) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.result-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 .result-date {
   font-size: 11px;
   color: var(--color-text-secondary, #999);
+}
+.result-score {
+  font-size: 11px;
+  color: var(--color-primary, #7EC8C8);
+  font-weight: 500;
+  background: var(--color-primary-light, #e6f7f7);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 .results-more {
   text-align: center;

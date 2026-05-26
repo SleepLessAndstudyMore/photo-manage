@@ -25,6 +25,10 @@
         <el-icon><MapLocation /></el-icon>
         <span>地图</span>
       </router-link>
+      <router-link to="/people" class="nav-link" active-class="nav-link--active">
+        <el-icon><User /></el-icon>
+        <span>人物</span>
+      </router-link>
       <router-link to="/duplicates" class="nav-link" active-class="nav-link--active">
         <el-icon><Delete /></el-icon>
         <span>清理</span>
@@ -46,7 +50,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { Clock, FolderOpened, Search, PriceTag, Collection, MapLocation, Delete, Setting } from '@element-plus/icons-vue'
+import { Clock, FolderOpened, Search, PriceTag, Collection, MapLocation, User, Delete, Setting } from '@element-plus/icons-vue'
 import { useSystemStore } from '@/stores/system'
 
 onMounted(() => {

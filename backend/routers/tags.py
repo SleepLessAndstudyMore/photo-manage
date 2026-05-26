@@ -62,6 +62,16 @@ async def list_tags(
     if type:
         base = base.where(Tag.type == type)
 
+    # When min_confidence is set, only include tags that have at least one
+    # PhotoTag with confidence >= min_confidence (auto tags only)
+    if min_confidence is not None and type == "auto":
+        subq = (
+            select(PhotoTag.tag_id)
+            .where(PhotoTag.confidence >= min_confidence)
+            .distinct()
+        )
+        base = base.where(Tag.id.in_(subq))
+
     if sort_by == "name":
         base = base.order_by(Tag.name)
     else:

@@ -146,15 +146,10 @@ function toggleSelect(id: number) {
 }
 
 async function cleanGroup(group: DupGroup) {
-  // Keep the first photo, delete the rest
   const toDelete = group.photos.slice(1)
-  const names = toDelete.map(p => p.file_name).join(', ')
   try {
-    // This relies on backend providing a delete endpoint via send2trash
     for (const photo of toDelete) {
-      await (await import('@/api/photos')).updatePhoto(photo.id, { file_missing: true })
-      // Note: actual file deletion via send2trash would need a delete endpoint
-      // For now, mark as deleted in DB
+      await (await import('@/api/photos')).deletePhotoFile(photo.id)
     }
     fetchGroups()
   } catch {

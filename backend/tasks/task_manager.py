@@ -24,6 +24,9 @@ class TaskType(str, Enum):
     CONSISTENCY = "consistency"
     TAG = "tag"
     DUPLICATE = "duplicate"
+    CLIP = "clip"
+    FACE_DETECT = "face_detect"
+    FACE_CLUSTER = "face_cluster"
 
 
 @dataclass

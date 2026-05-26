@@ -37,6 +37,9 @@ import { Loading } from '@element-plus/icons-vue'
 import { getGpsPhotos } from '@/api/photos'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 
 interface GpsPhoto {
   id: number
@@ -107,7 +110,14 @@ function initMap() {
   }).addTo(mapInstance)
 
   // Add markers with clustering
-  const markers = allPhotos.map((p) => {
+  const mcg = L.markerClusterGroup({
+    chunkedLoading: true,
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+  })
+
+  allPhotos.forEach((p) => {
     const marker = L.marker([p.latitude, p.longitude], {
       title: p.file_name,
     })
@@ -121,13 +131,16 @@ function initMap() {
       previewPhoto.value = p
       previewVisible.value = true
     })
-    return marker
+    mcg.addLayer(marker)
   })
 
-  // Use simple marker group (no cluster library needed)
-  const group = L.featureGroup(markers)
-  group.addTo(mapInstance)
-  mapInstance.fitBounds(group.getBounds().pad(0.1))
+  mapInstance.addLayer(mcg)
+
+  if (allPhotos.length > 1) {
+    mapInstance.fitBounds(mcg.getBounds().pad(0.1))
+  } else {
+    mapInstance.setView([allPhotos[0].latitude, allPhotos[0].longitude], 13)
+  }
 }
 
 function goToPhoto(id?: number) {
