@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,6 +8,10 @@ from sqlmodel import Session, select
 from backend.database import get_session
 from backend.models.library_source import LibrarySource
 from backend.models.photo import Photo
+from backend.models.photo_tag import PhotoTag
+from backend.models.photo_album import PhotoAlbum
+from backend.models.photo_face import PhotoFace
+from backend.models.photo_embedding import PhotoEmbedding
 from backend.schemas.library import (
     LibraryCreate, LibraryResponse, LibraryListResponse, ScanTriggerResponse,
 )
@@ -74,7 +79,25 @@ async def delete_library(
         select(Photo).where(Photo.library_source_id == library_id)
     ).all()
     for photo in photos:
-        # Try to delete thumbnail files (send2trash optional)
+        # Delete related records first (no cascade configured)
+        for tag_link in session.exec(select(PhotoTag).where(PhotoTag.photo_id == photo.id)).all():
+            session.delete(tag_link)
+        for album_link in session.exec(select(PhotoAlbum).where(PhotoAlbum.photo_id == photo.id)).all():
+            session.delete(album_link)
+        for face in session.exec(select(PhotoFace).where(PhotoFace.photo_id == photo.id)).all():
+            # Delete face thumbnails
+            if face.thumbnail_path:
+                fpath = Path("thumbnails") / face.thumbnail_path
+                if fpath.exists():
+                    try:
+                        fpath.unlink()
+                    except OSError:
+                        pass
+            session.delete(face)
+        for emb in session.exec(select(PhotoEmbedding).where(PhotoEmbedding.photo_id == photo.id)).all():
+            session.delete(emb)
+
+        # Delete thumbnail/preview files
         for attr in ("thumbnail_path", "preview_path"):
             fname = getattr(photo, attr, None)
             if fname:
