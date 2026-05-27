@@ -3,11 +3,15 @@
     <div class="tags-header">
       <h2 class="tags-title">标签云</h2>
       <div class="tags-header-actions">
-        <div class="mode-tabs">
-          <button class="mode-tab" :class="{ active: tagType === '' }" @click="tagType = ''; fetchTagList()">全部</button>
-          <button class="mode-tab" :class="{ active: tagType === 'auto' }" @click="tagType = 'auto'; fetchTagList()">AI 标签</button>
-          <button class="mode-tab" :class="{ active: tagType === 'manual' }" @click="tagType = 'manual'; fetchTagList()">手动标签</button>
-        </div>
+        <SegmentedControl
+          v-model="tagType"
+          :options="[
+            { label: '全部', value: '' },
+            { label: 'AI 标签', value: 'auto' },
+            { label: '手动标签', value: 'manual' },
+          ]"
+          @update:modelValue="fetchTagList()"
+        />
         <button class="pill-btn pill-btn--primary" @click="showAddTagDialog = true">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -103,6 +107,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTags, getTagPhotos, createTag } from '@/api/tags'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 
 interface TagItem {
   id: number
@@ -209,36 +214,6 @@ async function handleCreateTag() {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-}
-
-.mode-tabs {
-  display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-[data-theme="dark"] .mode-tabs {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mode-tab {
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.mode-tab.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .tags-loading {

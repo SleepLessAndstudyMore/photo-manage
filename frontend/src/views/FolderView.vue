@@ -1,10 +1,13 @@
 <template>
   <div class="folder-page">
     <div class="folder-toolbar">
-      <div class="mode-tabs">
-        <button class="mode-tab" :class="{ active: viewMode === 'folders' }" @click="viewMode = 'folders'">文件夹视图</button>
-        <button class="mode-tab" :class="{ active: viewMode === 'aggregate' }" @click="viewMode = 'aggregate'">聚合视图</button>
-      </div>
+      <SegmentedControl
+        v-model="viewMode"
+        :options="[
+          { label: '文件夹视图', value: 'folders' },
+          { label: '聚合视图', value: 'aggregate' },
+        ]"
+      />
     </div>
 
     <div v-if="viewMode === 'folders'" class="folders-grid">
@@ -78,6 +81,7 @@ import { useRouter } from 'vue-router'
 import { usePhotoStore } from '@/stores/photo'
 import type { Photo } from '@/types/photo'
 import PhotoGrid from '@/components/PhotoGrid.vue'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 
 const router = useRouter()
 const photoStore = usePhotoStore()
@@ -164,36 +168,6 @@ function onCardMouseMove(e: MouseEvent) {
 
 [data-theme="dark"] .folder-toolbar {
   background: rgba(255, 255, 255, 0.03);
-}
-
-.mode-tabs {
-  display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-[data-theme="dark"] .mode-tabs {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mode-tab {
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.mode-tab.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .folders-grid {

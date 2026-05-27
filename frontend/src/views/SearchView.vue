@@ -2,10 +2,13 @@
   <div class="view-search">
     <!-- 顶部工具栏 -->
     <div class="search-toolbar">
-      <div class="search-mode-tabs">
-        <button class="mode-tab" :class="{ active: searchMode === 'structured' }" @click="searchMode = 'structured'">结构化搜索</button>
-        <button class="mode-tab" :class="{ active: searchMode === 'hybrid' }" @click="searchMode = 'hybrid'">自然语言</button>
-      </div>
+      <SegmentedControl
+        v-model="searchMode"
+        :options="[
+          { label: '结构化搜索', value: 'structured' },
+          { label: '自然语言', value: 'hybrid' },
+        ]"
+      />
 
       <!-- Hybrid search bar -->
       <div v-if="searchMode === 'hybrid'" class="hybrid-toolbar">
@@ -109,11 +112,15 @@
       <template v-else>
         <div class="results-header">
           <span class="results-count">找到 {{ total }} 张照片</span>
-          <div class="sort-tabs">
-            <button class="sort-tab" :class="{ active: sortBy === 'date_taken' }" @click="sortBy = 'date_taken'; doSearch()">日期</button>
-            <button class="sort-tab" :class="{ active: sortBy === 'rating' }" @click="sortBy = 'rating'; doSearch()">评分</button>
-            <button class="sort-tab" :class="{ active: sortBy === 'file_name' }" @click="sortBy = 'file_name'; doSearch()">名称</button>
-          </div>
+          <SegmentedControl
+            v-model="sortBy"
+            :options="[
+              { label: '日期', value: 'date_taken' },
+              { label: '评分', value: 'rating' },
+              { label: '名称', value: 'file_name' },
+            ]"
+            @update:modelValue="doSearch()"
+          />
         </div>
         <div class="results-grid">
           <div
@@ -158,6 +165,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchPhotos, generateEmbeddings } from '@/api/photos'
 import { getTags } from '@/api/tags'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 
 interface PhotoItem {
   id: number
@@ -335,38 +343,6 @@ function formatDate(dateStr: string) {
 
 [data-theme="dark"] .search-toolbar {
   background: rgba(255, 255, 255, 0.03);
-}
-
-.search-mode-tabs {
-  display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  padding: 2px;
-  width: fit-content;
-  margin-bottom: var(--space-md);
-}
-
-[data-theme="dark"] .search-mode-tabs {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mode-tab {
-  padding: 6px 16px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.mode-tab.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 /* ===== Hybrid 搜索 ===== */
@@ -608,36 +584,6 @@ function formatDate(dateStr: string) {
   font-size: var(--text-sm);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-}
-
-.sort-tabs {
-  display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 6px;
-  padding: 2px;
-}
-
-[data-theme="dark"] .sort-tabs {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.sort-tab {
-  padding: 4px 12px;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.sort-tab.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .results-grid {

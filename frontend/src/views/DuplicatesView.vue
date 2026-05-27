@@ -3,11 +3,15 @@
     <div class="dup-header">
       <h2 class="dup-title">重复照片清理</h2>
       <div class="dup-actions">
-        <div class="mode-tabs">
-          <button class="mode-tab" :class="{ active: dupType === 'all' }" @click="dupType = 'all'; fetchGroups()">全部</button>
-          <button class="mode-tab" :class="{ active: dupType === 'bitwise' }" @click="dupType = 'bitwise'; fetchGroups()">完全重复</button>
-          <button class="mode-tab" :class="{ active: dupType === 'visual' }" @click="dupType = 'visual'; fetchGroups()">视觉相似</button>
-        </div>
+        <SegmentedControl
+          v-model="dupType"
+          :options="[
+            { label: '全部', value: 'all' },
+            { label: '完全重复', value: 'bitwise' },
+            { label: '视觉相似', value: 'visual' },
+          ]"
+          @update:modelValue="fetchGroups()"
+        />
         <button class="pill-btn" :disabled="loading" @click="fetchGroups">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
@@ -102,6 +106,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getDuplicates } from '@/api/photos'
+import SegmentedControl from '@/components/SegmentedControl.vue'
 
 interface PhotoBrief {
   id: number
@@ -203,36 +208,6 @@ function formatSize(bytes: number) {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-}
-
-.mode-tabs {
-  display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-[data-theme="dark"] .mode-tabs {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mode-tab {
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.mode-tab.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .dup-loading { padding: var(--space-xl); }
