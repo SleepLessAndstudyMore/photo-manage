@@ -1,6 +1,7 @@
 <template>
   <div class="view-tags">
     <div class="tags-header">
+      <h2 class="page-title">标签</h2>
       <div class="tags-header-actions">
         <SegmentedControl
           v-model="tagType"
@@ -13,10 +14,24 @@
         />
         <button class="pill-btn pill-btn--primary" @click="showAddTagDialog = true">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           创建标签
         </button>
+      </div>
+    </div>
+
+    <div class="tags-search">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="search-input"
+          placeholder="搜索标签..."
+        />
       </div>
     </div>
 
@@ -24,29 +39,38 @@
       <el-skeleton :rows="3" animated />
     </div>
 
-    <div v-else-if="tags.length === 0" class="tags-empty">
+    <div v-else-if="filteredTags.length === 0" class="tags-empty">
       <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
         </svg>
       </div>
       <p>暂无标签</p>
       <p class="text-secondary">扫描照片后将自动生成 AI 标签</p>
     </div>
 
-    <div v-else class="tag-cloud">
-      <div
-        v-for="(tag, index) in tags"
-        :key="tag.id"
-        class="tag-capsule"
-        :style="{
-          fontSize: tagFontSize(tag.photo_count),
-          animationDelay: `${Math.min(index * 25, 400)}ms`
-        }"
-        @click="selectTag(tag)"
-      >
-        <span class="tag-name">{{ tag.name_zh || tag.name }}</span>
-        <span class="tag-count">{{ tag.photo_count }}</span>
+    <div v-else class="tags-content">
+      <div v-for="(group, groupName) in groupedTags" :key="groupName" class="tag-group">
+        <h3 class="group-title">{{ groupName }}</h3>
+        <div class="tag-grid">
+          <div
+            v-for="(tag, index) in group"
+            :key="tag.id"
+            class="tag-card"
+            :style="{ animationDelay: `${Math.min(index * 25, 400)}ms` }"
+            @click="selectTag(tag)"
+          >
+            <div class="tag-card-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+            </div>
+            <div class="tag-card-info">
+              <span class="tag-name">{{ tag.name_zh || tag.name }}</span>
+              <span class="tag-count">{{ tag.photo_count }} 张</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -103,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTags, getTagPhotos, createTag } from '@/api/tags'
 import SegmentedControl from '@/components/SegmentedControl.vue'
@@ -127,6 +151,7 @@ const router = useRouter()
 const tags = ref<TagItem[]>([])
 const loading = ref(false)
 const tagType = ref('')
+const searchQuery = ref('')
 const tagDialogVisible = ref(false)
 const selectedTag = ref<TagItem | null>(null)
 const tagPhotos = ref<PhotoItem[]>([])
@@ -136,6 +161,42 @@ const newTagNameZh = ref('')
 
 const MAX_FONT_SIZE = 28
 const MIN_FONT_SIZE = 13
+
+const filteredTags = computed(() => {
+  if (!searchQuery.value) return tags.value
+  const query = searchQuery.value.toLowerCase()
+  return tags.value.filter(tag =>
+    (tag.name_zh || tag.name).toLowerCase().includes(query) ||
+    tag.name.toLowerCase().includes(query)
+  )
+})
+
+const groupedTags = computed(() => {
+  const groups: Record<string, TagItem[]> = {
+    '人物': [],
+    '场景': [],
+    '物品': [],
+    '其他': [],
+  }
+
+  filteredTags.value.forEach(tag => {
+    const name = (tag.name_zh || tag.name).toLowerCase()
+    if (name.includes('人') || name.includes('男') || name.includes('女') || name.includes('孩') || name.includes('老人')) {
+      groups['人物'].push(tag)
+    } else if (name.includes('海') || name.includes('山') || name.includes('城市') || name.includes('日落') || name.includes('风景')) {
+      groups['场景'].push(tag)
+    } else if (name.includes('车') || name.includes('电视') || name.includes('手机') || name.includes('电脑')) {
+      groups['物品'].push(tag)
+    } else {
+      groups['其他'].push(tag)
+    }
+  })
+
+  // 移除空分组
+  return Object.fromEntries(
+    Object.entries(groups).filter(([, tags]) => tags.length > 0)
+  )
+})
 
 onMounted(() => {
   fetchTagList()
@@ -190,26 +251,75 @@ async function handleCreateTag() {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
+  padding: var(--space-6);
   overflow: hidden;
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--text-h1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .tags-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-4);
   flex-shrink: 0;
 }
 
 .tags-header-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-3);
+}
+
+.tags-search {
+  margin-bottom: var(--space-4);
+  flex-shrink: 0;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-placeholder);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: var(--text-placeholder);
 }
 
 .tags-loading {
-  padding: var(--space-xl);
+  padding: var(--space-6);
 }
 
 .tags-empty {
@@ -218,8 +328,8 @@ async function handleCreateTag() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
-  gap: var(--space-md);
+  color: var(--text-placeholder);
+  gap: var(--space-4);
 }
 
 .empty-icon-float {
@@ -227,107 +337,136 @@ async function handleCreateTag() {
   animation: float 4s ease-in-out infinite;
 }
 
-/* ===== 标签云 — 漂浮胶囊 ===== */
-.tag-cloud {
+.tags-content {
   flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 12px 16px;
-  padding: var(--space-lg);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-.tag-capsule {
-  cursor: pointer;
-  padding: 8px 18px;
-  border-radius: 100px;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  display: inline-flex;
+.tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.group-title {
+  font-size: var(--text-overline);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-placeholder);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin: 0;
+}
+
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.tag-card {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  line-height: 1.4;
-  white-space: nowrap;
-  animation: stagger-in 0.5s var(--ease-apple) both;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
-[data-theme="dark"] .tag-capsule {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.tag-capsule:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: var(--shadow-md), 0 0 20px var(--accent-glow);
+.tag-card:hover {
   border-color: var(--accent);
   background: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.tag-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.tag-card:hover .tag-card-icon {
+  background: var(--accent-medium);
+  color: var(--accent);
+}
+
+.tag-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .tag-name {
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tag-count {
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
 /* ===== Dialogs ===== */
 :deep(.glass-dialog .el-dialog) {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-float);
-}
-
-[data-theme="dark"] :deep(.glass-dialog .el-dialog) {
-  background: rgba(30, 30, 34, 0.8);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
 :deep(.el-dialog__header) {
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border-color);
 }
 
 :deep(.el-dialog__body) {
-  padding: var(--space-xl);
+  padding: var(--space-6);
 }
 
 :deep(.el-dialog__footer) {
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border-color);
 }
 
 .tag-photos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+  gap: var(--space-3);
 }
 
 .tag-photo-item {
   cursor: pointer;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xs);
   overflow: hidden;
   position: relative;
   aspect-ratio: 1;
-  background: var(--bg-secondary);
-  box-shadow: var(--card-shadow);
-  transition: all 220ms var(--ease-apple);
-  animation: stagger-in 0.4s var(--ease-apple) both;
+  background: var(--gray-100);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
 .tag-photo-item:hover {
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
 }
 
 .tag-photo-item img {
@@ -342,12 +481,12 @@ async function handleCreateTag() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 .dialog-empty {
   text-align: center;
-  padding: var(--space-xl);
+  padding: var(--space-6);
   color: var(--text-secondary);
 }
 

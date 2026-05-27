@@ -3,11 +3,11 @@
     <div class="page-header">
       <h2 class="page-title">人物</h2>
       <div class="header-actions">
-        <button class="pill-btn" :class="{ 'is-loading': detecting }" :disabled="detecting" @click="onDetectFaces">
+        <button class="pill-btn pill-btn--ghost" :class="{ 'is-loading': detecting }" :disabled="detecting" @click="onDetectFaces">
           <span v-if="detecting" class="spinner-sm" />
           检测人脸
         </button>
-        <button class="pill-btn" :class="{ 'is-loading': clustering }" :disabled="clustering" @click="onClusterFaces">
+        <button class="pill-btn pill-btn--ghost" :class="{ 'is-loading': clustering }" :disabled="clustering" @click="onClusterFaces">
           <span v-if="clustering" class="spinner-sm" />
           重新聚类
         </button>
@@ -35,12 +35,12 @@
     <!-- Empty -->
     <div v-else-if="clusters.length === 0" class="empty-area">
       <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
         </svg>
       </div>
       <p class="empty-title">尚未检测到人脸</p>
-      <p class="text-secondary">点击下方按钮开始扫描照片中的人脸</p>
+      <p class="text-secondary">开启人脸检测后，可自动识别照片中的人物</p>
       <button class="pill-btn pill-btn--primary" style="margin-top: 16px" :disabled="detecting" @click="onDetectFaces">
         检测人脸
       </button>
@@ -48,43 +48,86 @@
 
     <!-- Clusters grid -->
     <template v-else>
-      <div class="cluster-count">共 {{ total }} 个人物</div>
-      <div class="clusters-grid">
-        <div
-          v-for="(cluster, index) in clusters"
-          :key="cluster.id"
-          class="cluster-card"
-          :class="{ 'is-selected': selectedIds.includes(cluster.id) }"
-          :style="{ animationDelay: `${Math.min(index * 40, 400)}ms` }"
-          @click="onSelect(cluster.id)"
-          @dblclick="goToDetail(cluster.id)"
-        >
-          <div class="card-avatar">
-            <img
-              v-if="cluster.cover_thumbnail"
-              :src="'/thumbnails/' + cluster.cover_thumbnail"
-              :alt="cluster.name || '人物'"
-            />
-            <div v-else class="avatar-placeholder">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+      <div class="cluster-section">
+        <h3 class="section-title">已命名</h3>
+        <div class="clusters-grid">
+          <div
+            v-for="(cluster, index) in namedClusters"
+            :key="cluster.id"
+            class="cluster-card"
+            :class="{ 'is-selected': selectedIds.includes(cluster.id) }"
+            :style="{ animationDelay: `${Math.min(index * 40, 400)}ms` }"
+            @click="onSelect(cluster.id)"
+            @dblclick="goToDetail(cluster.id)"
+          >
+            <div class="card-avatar">
+              <img
+                v-if="cluster.cover_thumbnail"
+                :src="'/thumbnails/' + cluster.cover_thumbnail"
+                :alt="cluster.name || '人物'"
+              />
+              <div v-else class="avatar-placeholder">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <button class="card-edit-btn" @click.stop="openRename(cluster)">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="card-info">
+              <span class="card-name">{{ cluster.name }}</span>
+              <span class="card-count">{{ cluster.face_count }} 张照片</span>
+            </div>
+            <div v-if="selectedIds.includes(cluster.id)" class="check-badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
-            <!-- 编辑按钮 -->
-            <button class="card-edit-btn" @click.stop="openRename(cluster)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </div>
+        </div>
+      </div>
+
+      <div v-if="unnamedClusters.length > 0" class="cluster-section">
+        <h3 class="section-title">待命名</h3>
+        <div class="clusters-grid">
+          <div
+            v-for="(cluster, index) in unnamedClusters"
+            :key="cluster.id"
+            class="cluster-card cluster-card--unnamed"
+            :class="{ 'is-selected': selectedIds.includes(cluster.id) }"
+            :style="{ animationDelay: `${Math.min(index * 40, 400)}ms` }"
+            @click="onSelect(cluster.id)"
+            @dblclick="goToDetail(cluster.id)"
+          >
+            <div class="card-avatar">
+              <img
+                v-if="cluster.cover_thumbnail"
+                :src="'/thumbnails/' + cluster.cover_thumbnail"
+                :alt="'人物'"
+              />
+              <div v-else class="avatar-placeholder">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <button class="card-edit-btn" @click.stop="openRename(cluster)">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="card-info">
+              <span class="card-name card-name--placeholder">添加姓名</span>
+              <span class="card-count">{{ cluster.face_count }} 张照片</span>
+            </div>
+            <div v-if="selectedIds.includes(cluster.id)" class="check-badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
               </svg>
-            </button>
-          </div>
-          <div class="card-info">
-            <span class="card-name">{{ cluster.name || '人物 ' + cluster.id }}</span>
-            <span class="card-count">{{ cluster.face_count }} 张照片</span>
-          </div>
-          <div v-if="selectedIds.includes(cluster.id)" class="check-badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -104,7 +147,7 @@
         />
         <div v-else class="rename-avatar-placeholder">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
       </div>
@@ -146,6 +189,9 @@ const currentPage = ref(1)
 const renameVisible = ref(false)
 const renameCluster = ref<FaceCluster | null>(null)
 const renameName = ref('')
+
+const namedClusters = computed(() => clusters.value.filter(c => c.name))
+const unnamedClusters = computed(() => clusters.value.filter(c => !c.name))
 
 onMounted(() => {
   fetchClusters()
@@ -247,7 +293,7 @@ async function onClusterFaces() {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
+  padding: var(--space-6);
   overflow: hidden;
 }
 
@@ -255,20 +301,32 @@ async function onClusterFaces() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-6);
   flex-shrink: 0;
 }
 
 .page-title {
   margin: 0;
-  font-size: var(--text-3xl);
-  font-weight: 200;
-  letter-spacing: -1px;
+  font-size: var(--text-h1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .header-actions {
   display: flex;
-  gap: var(--space-sm);
+  gap: var(--space-2);
+}
+
+.pill-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.pill-btn--ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
 }
 
 .spinner-sm {
@@ -291,96 +349,92 @@ async function onClusterFaces() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
+  gap: var(--space-4);
 }
 
 .empty-icon-float {
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
   opacity: 0.3;
   animation: float 4s ease-in-out infinite;
 }
 
 .empty-title {
-  font-size: var(--text-lg);
-  font-weight: 500;
+  font-size: var(--text-h3);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
 }
 
 .text-secondary {
   color: var(--text-secondary);
-  font-size: var(--text-base);
+  font-size: var(--text-body);
 }
 
-.cluster-count {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-lg);
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
+.cluster-section {
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--text-overline);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-placeholder);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin: 0 0 var(--space-4);
 }
 
 .clusters-grid {
-  flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-lg);
-  justify-content: center;
-  align-content: start;
-  overflow-y: auto;
-  padding: var(--space-xs);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-4);
 }
 
-/* ===== 人物卡片 — Apple Photos 风格 ===== */
+/* ===== 人物卡片 ===== */
 .cluster-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-xl) var(--space-md) var(--space-lg);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--card-shadow);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all var(--transition-fast);
   position: relative;
   user-select: none;
-  animation: stagger-in 0.5s var(--ease-apple) both;
-}
-
-[data-theme="dark"] .cluster-card {
-  background: rgba(255, 255, 255, 0.04);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
 .cluster-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--card-shadow-hover);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
 }
 
 .cluster-card.is-selected {
   border-color: var(--accent);
   background: var(--accent-light);
-  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.cluster-card--unnamed .card-name {
+  color: var(--accent);
 }
 
 .card-avatar {
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--bg-tertiary);
+  background: var(--gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  transition: transform 0.4s var(--ease-apple);
+  transition: transform var(--transition-fast);
 }
 
 .cluster-card:hover .card-avatar {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .card-avatar img {
@@ -392,14 +446,13 @@ async function onClusterFaces() {
 /* 编辑按钮 */
 .card-edit-btn {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
+  bottom: 40px;
+  right: calc(50% - 48px);
   width: 28px;
   height: 28px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
+  background: var(--bg-card);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -407,12 +460,8 @@ async function onClusterFaces() {
   cursor: pointer;
   opacity: 0;
   transform: scale(0.8);
-  transition: all 0.2s var(--ease-apple);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="dark"] .card-edit-btn {
-  background: rgba(50, 50, 54, 0.85);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .cluster-card:hover .card-edit-btn {
@@ -426,7 +475,7 @@ async function onClusterFaces() {
 }
 
 .avatar-placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
   opacity: 0.4;
 }
 
@@ -434,14 +483,14 @@ async function onClusterFaces() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
   width: 100%;
 }
 
 .card-name {
-  font-size: var(--text-base);
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -449,16 +498,21 @@ async function onClusterFaces() {
   max-width: 100%;
 }
 
+.card-name--placeholder {
+  color: var(--accent);
+  font-weight: var(--font-weight-regular);
+}
+
 .card-count {
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
 .check-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: var(--space-2);
+  right: var(--space-2);
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -467,12 +521,12 @@ async function onClusterFaces() {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .load-more {
   text-align: center;
-  padding: var(--space-md);
+  padding: var(--space-4);
   flex-shrink: 0;
 }
 
@@ -489,7 +543,7 @@ async function onClusterFaces() {
 .rename-preview {
   display: flex;
   justify-content: center;
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-4);
 }
 
 .rename-avatar {
@@ -497,30 +551,24 @@ async function onClusterFaces() {
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .rename-avatar-placeholder {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: var(--bg-tertiary);
+  background: var(--gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 :deep(.glass-dialog .el-dialog) {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-float);
-}
-
-[data-theme="dark"] :deep(.glass-dialog .el-dialog) {
-  background: rgba(30, 30, 34, 0.8);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
 }
 </style>

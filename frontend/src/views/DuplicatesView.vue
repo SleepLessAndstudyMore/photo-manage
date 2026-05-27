@@ -184,7 +184,7 @@ function formatSize(bytes: number) {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
+  padding: var(--space-6);
   overflow: hidden;
 }
 
@@ -192,17 +192,17 @@ function formatSize(bytes: number) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-6);
   flex-shrink: 0;
 }
 
 .dup-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-4);
 }
 
-.dup-loading { padding: var(--space-xl); }
+.dup-loading { padding: var(--space-6); }
 
 .dup-empty {
   flex: 1;
@@ -210,25 +210,25 @@ function formatSize(bytes: number) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
-  gap: var(--space-md);
+  color: var(--text-placeholder);
+  gap: var(--space-4);
 }
 
 .empty-icon-float {
-  color: #34C759;
+  color: var(--success-500);
   opacity: 0.4;
   animation: float 4s ease-in-out infinite;
 }
 
 .empty-title {
-  font-size: var(--text-lg);
-  font-weight: 500;
+  font-size: var(--text-h3);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
 }
 
 .text-secondary {
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--text-body);
 }
 
 .dup-list {
@@ -236,131 +236,129 @@ function formatSize(bytes: number) {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-4);
 }
 
 /* ===== 重复卡片 ===== */
 .dup-card {
   flex-shrink: 0;
-  background: var(--card-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  box-shadow: var(--card-shadow);
-  transition: all var(--transition-fast);
-  animation: stagger-in 0.5s var(--ease-apple) both;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition-fast);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
 .dup-card:hover {
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .dup-card-header {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .dup-type-badge {
-  padding: 4px 12px;
-  border-radius: 100px;
-  font-size: var(--text-xs);
-  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-semibold);
 }
 
 .dup-type-badge.bitwise {
-  background: rgba(255, 59, 48, 0.12);
-  color: #FF3B30;
+  background: var(--danger-100);
+  color: var(--danger-500);
 }
 
 .dup-type-badge.visual {
-  background: rgba(255, 149, 0, 0.12);
-  color: #FF9500;
+  background: var(--warning-100);
+  color: var(--warning-500);
 }
 
 .dup-msg {
   flex: 1;
-  font-size: var(--text-sm);
+  font-size: var(--text-body);
   color: var(--text-secondary);
 }
 
 .dup-delete-btn {
-  color: #FF3B30;
+  color: var(--danger-500);
 }
 
 .dup-delete-btn:hover {
-  background: rgba(255, 59, 48, 0.1);
+  background: var(--danger-100);
 }
 
 .dup-photos-row {
   display: flex;
-  gap: var(--space-md);
+  gap: var(--space-3);
   overflow-x: auto;
-  padding-bottom: var(--space-xs);
+  padding-bottom: var(--space-1);
 }
 
 .dup-photo-item {
   cursor: pointer;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xs);
   overflow: hidden;
   width: 150px;
   flex-shrink: 0;
-  background: var(--bg-secondary);
+  background: var(--gray-100);
   border: 2px solid transparent;
-  transition: all 220ms var(--ease-apple);
+  transition: all var(--transition-fast);
 }
 
 .dup-photo-item.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 16px var(--accent-glow);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .dup-photo-item:hover {
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 
 .dup-photo-item img {
   width: 100%;
-  height: 130px;
+  height: 120px;
   object-fit: cover;
   display: block;
 }
 
 .dup-photo-placeholder {
-  height: 130px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 .dup-photo-info {
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .dup-photo-name {
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .dup-photo-size {
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
 .compare-row {
   display: flex;
-  gap: var(--space-lg);
+  gap: var(--space-6);
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -370,27 +368,21 @@ function formatSize(bytes: number) {
 .compare-item img {
   max-width: 320px;
   max-height: 320px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--card-shadow);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .compare-name {
-  margin-top: var(--space-sm);
-  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  font-size: var(--text-body);
   color: var(--text-secondary);
 }
 
 :deep(.glass-dialog .el-dialog) {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-float);
-}
-
-[data-theme="dark"] :deep(.glass-dialog .el-dialog) {
-  background: rgba(30, 30, 34, 0.8);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
 @keyframes float {

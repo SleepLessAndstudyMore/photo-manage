@@ -1,178 +1,208 @@
 :root {
-  /* === 底色 — 极浅灰白 + 微弱蓝紫渐变 === */
-  --bg-primary: #f5f7fb;
-  --bg-secondary: #eef2ff;
-  --bg-tertiary: #e8ecf4;
+  /* === 主色 — 专业蓝 === */
+  --primary-600: #2563EB;
+  --primary-500: #3B82F6;
+  --primary-400: #60A5FA;
+  --primary-100: #DBEAFE;
+  --primary-50: #EFF6FF;
 
-  /* === 毛玻璃卡片 === */
-  --card-bg: rgba(255, 255, 255, 0.55);
-  --card-blur: blur(40px);
-  --card-shadow:
-    0 8px 30px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.04);
-  --card-shadow-hover:
-    0 16px 48px rgba(15, 23, 42, 0.12),
-    0 4px 12px rgba(15, 23, 42, 0.06);
+  /* === 中性色 — 8级梯度 === */
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-500: #6B7280;
+  --gray-400: #9CA3AF;
+  --gray-300: #D1D5DB;
+  --gray-200: #E5E7EB;
+  --gray-100: #F3F4F6;
+  --gray-50: #F9FAFB;
+
+  /* === 语义色 === */
+  --success-500: #10B981;
+  --success-100: #D1FAE5;
+  --warning-500: #F59E0B;
+  --warning-100: #FEF3C7;
+  --danger-500: #EF4444;
+  --danger-100: #FEE2E2;
+  --info-500: #3B82F6;
+  --info-100: #DBEAFE;
+
+  /* === 背景色 === */
+  --bg-primary: var(--gray-50);
+  --bg-card: #FFFFFF;
+  --bg-secondary: var(--gray-100);
+  --bg-tertiary: var(--gray-200);
 
   /* === 边框 === */
-  --border-color: rgba(0, 0, 0, 0.06);
-  --border-color-hover: rgba(0, 0, 0, 0.12);
-  --border-glass: rgba(255, 255, 255, 0.35);
+  --border-color: var(--gray-200);
+  --border-color-hover: var(--gray-300);
 
-  /* === 文字 === */
-  --text-primary: #1D1D1F;
-  --text-secondary: #86868B;
-  --text-tertiary: #AEAEB2;
+  /* === 文字色 === */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-tertiary: var(--gray-500);
+  --text-placeholder: var(--gray-400);
 
-  /* === 强调色 — Apple 蓝 === */
-  --accent: #007AFF;
-  --accent-hover: #0066DD;
-  --accent-light: rgba(0, 122, 255, 0.10);
-  --accent-glow: rgba(0, 122, 255, 0.15);
+  /* === 强调色 === */
+  --accent: var(--primary-600);
+  --accent-hover: var(--primary-500);
+  --accent-light: var(--primary-50);
+  --accent-medium: var(--primary-100);
 
-  /* === 渐变光晕 — 蓝紫氛围光 === */
-  --bg-glow:
-    radial-gradient(ellipse at 15% 30%, rgba(0, 122, 255, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 20%, rgba(175, 82, 222, 0.10) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(255, 149, 0, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 10% 80%, rgba(90, 200, 250, 0.08) 0%, transparent 50%);
-
-  /* === 网格点阵纹理 === */
-  --bg-dots: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-  --bg-dots-size: 24px 24px;
-
-  /* === 字体 — SF Pro Display 风格 === */
-  --font-sans: -apple-system, "SF Pro Display", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
-  --font-display: "SF Pro Display", "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+  /* === 字体 === */
+  --font-sans: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --font-display: "SF Pro Display", "PingFang SC", "Microsoft YaHei", Inter, system-ui, sans-serif;
   --font-mono: "SF Mono", "Fira Code", "Consolas", monospace;
 
   /* === 字号层级 === */
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 15px;
-  --text-lg: 17px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 32px;
-  --text-4xl: 40px;
-  --text-display: 48px;
+  --text-h1: 24px;
+  --text-h2: 20px;
+  --text-h3: 16px;
+  --text-body: 14px;
+  --text-caption: 12px;
+  --text-overline: 11px;
 
-  /* === 间距系统 === */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
+  /* === 字重 === */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
-  /* === 圆角 — macOS 风格大圆角 === */
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
-  --radius-window: 20px;
+  /* === 字间距 === */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.01em;
+  --tracking-wider: 0.05em;
 
-  /* === 过渡 — Apple 标准缓动 === */
-  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
-  --transition-fast: 0.18s var(--ease-apple);
-  --transition-normal: 0.3s var(--ease-apple);
-  --transition-slow: 0.45s var(--ease-apple);
+  /* === 间距系统（4px基准）=== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* === 圆角系统 === */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* === 阴影系统 === */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
+
+  /* === 过渡 === */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
 
   /* === 滚动条 === */
   --scrollbar-width: 6px;
-  --scrollbar-color: rgba(0, 0, 0, 0.15);
-  --scrollbar-color-hover: rgba(0, 0, 0, 0.3);
-
-  /* === 阴影系统 === */
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 8px 30px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.12);
-  --shadow-float: 0 20px 60px rgba(15, 23, 42, 0.16);
-  --shadow-glow: 0 0 40px rgba(0, 122, 255, 0.08);
-
-  /* === 窗口风格 === */
-  --window-radius: 20px;
-  --window-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.08);
+  --scrollbar-color: var(--gray-300);
+  --scrollbar-color-hover: var(--gray-400);
 
   /* === 旧变量兼容 === */
   --font-family: var(--font-sans);
-  --font-size-xs: var(--text-xs);
-  --font-size-sm: var(--text-sm);
-  --font-size-md: var(--text-base);
-  --font-size-lg: var(--text-lg);
-  --font-size-xl: var(--text-xl);
-  --font-size-2xl: var(--text-2xl);
-  --font-size-3xl: var(--text-3xl);
-  --spacing-xs: var(--space-xs);
-  --spacing-sm: var(--space-sm);
-  --spacing-md: var(--space-md);
-  --spacing-lg: var(--space-lg);
-  --spacing-xl: var(--space-xl);
-  --spacing-2xl: var(--space-2xl);
-  --shadow-card: var(--card-shadow);
-  --shadow-card-hover: var(--card-shadow-hover);
-  --blur-amount: var(--card-blur);
+  --text-xs: var(--text-overline);
+  --text-sm: var(--text-caption);
+  --text-base: var(--text-body);
+  --text-lg: var(--text-h3);
+  --text-xl: var(--text-h2);
+  --text-2xl: var(--text-h1);
+  --text-3xl: 28px;
+  --text-4xl: 32px;
+  --text-display: 40px;
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-6);
+  --space-xl: var(--space-8);
+  --space-2xl: var(--space-12);
+  --space-3xl: 64px;
+  --radius-sm: var(--radius-xs);
+  --radius-md: var(--radius-sm);
+  --radius-lg: var(--radius-md);
+  --radius-xl: var(--radius-lg);
+  --radius-2xl: var(--radius-lg);
+  --radius-window: var(--radius-lg);
+  --shadow-card: var(--shadow-xs);
+  --shadow-card-hover: var(--shadow-sm);
+  --blur-amount: blur(24px);
+  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
+  --card-bg: var(--bg-card);
+  --card-blur: blur(24px);
+  --card-shadow: var(--shadow-xs);
+  --card-shadow-hover: var(--shadow-sm);
+  --border-glass: var(--gray-200);
+  --bg-glow: none;
+  --bg-dots: none;
+  --bg-dots-size: none;
+  --window-radius: var(--radius-lg);
+  --window-shadow: var(--shadow-lg);
+  --accent-glow: rgba(37, 99, 235, 0.15);
 }
 
 [data-theme="dark"] {
-  /* 底色 — 深蓝灰空间感 */
-  --bg-primary: #111114;
-  --bg-secondary: #1a1a1e;
-  --bg-tertiary: #242428;
+  /* 主色 — 提亮 */
+  --primary-600: #3B82F6;
+  --primary-500: #60A5FA;
+  --primary-400: #93C5FD;
+
+  /* 中性色 — 深色梯度 */
+  --gray-900: #F1F5F9;
+  --gray-700: #CBD5E1;
+  --gray-500: #94A3B8;
+  --gray-400: #64748B;
+  --gray-300: #475569;
+  --gray-200: #334155;
+  --gray-100: #1E293B;
+  --gray-50: #0F172A;
+
+  /* 背景色 */
+  --bg-primary: #0F172A;
+  --bg-card: #1E293B;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
 
   /* 边框 */
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-color-hover: rgba(255, 255, 255, 0.15);
-  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-color: #334155;
+  --border-color-hover: #475569;
 
-  /* 文字 */
-  --text-primary: #F5F5F7;
-  --text-secondary: #A1A1A6;
-  --text-tertiary: #6E6E73;
+  /* 文字色 */
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-tertiary: #94A3B8;
+  --text-placeholder: #64748B;
 
   /* 强调色 */
-  --accent: #0A84FF;
-  --accent-hover: #409CFF;
-  --accent-light: rgba(10, 132, 255, 0.15);
-  --accent-glow: rgba(10, 132, 255, 0.2);
+  --accent: #3B82F6;
+  --accent-hover: #60A5FA;
+  --accent-light: rgba(59, 130, 246, 0.15);
 
-  /* 毛玻璃卡片 */
-  --card-bg: rgba(30, 30, 34, 0.65);
-  --card-blur: blur(60px);
-  --card-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.2);
-  --card-shadow-hover:
-    0 16px 48px rgba(0, 0, 0, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.25);
-
-  /* 渐变光晕 — 深色下柔和发光 */
-  --bg-glow:
-    radial-gradient(ellipse at 15% 30%, rgba(10, 132, 255, 0.08) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 20%, rgba(175, 82, 222, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(255, 159, 10, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 10% 80%, rgba(50, 173, 230, 0.05) 0%, transparent 50%);
-
-  /* 深色点阵 */
-  --bg-dots: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  /* 阴影 — 深色模式使用边框替代 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 8px 10px rgba(0, 0, 0, 0.3);
 
   /* 滚动条 */
-  --scrollbar-color: rgba(255, 255, 255, 0.15);
-  --scrollbar-color-hover: rgba(255, 255, 255, 0.3);
+  --scrollbar-color: #475569;
+  --scrollbar-color-hover: #64748B;
 
-  /* 阴影 */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
-  --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 40px rgba(10, 132, 255, 0.1);
+  /* 卡片 */
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.5);
 
-  /* 窗口风格 */
-  --window-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.4),
-    0 8px 24px rgba(0, 0, 0, 0.3);
+  /* 玻璃边框 */
+  --border-glass: rgba(51, 65, 85, 0.5);
+
+  /* 强调色光晕 */
+  --accent-glow: rgba(59, 130, 246, 0.2);
 }

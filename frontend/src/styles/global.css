@@ -17,26 +17,8 @@ html, body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f5f7fb 0%, #eef2ff 35%, #f8faff 100%);
-  position: relative;
+  background: var(--bg-primary);
   transition: background var(--transition-slow), color var(--transition-normal);
-}
-
-[data-theme="dark"] #app {
-  background: linear-gradient(135deg, #111114 0%, #161618 35%, #131316 100%);
-}
-
-/* ===== 多层背景系统 ===== */
-#app::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    var(--bg-dots),
-    var(--bg-glow);
-  background-size: var(--bg-dots-size), cover;
 }
 
 /* === 滚动条 === */
@@ -47,14 +29,19 @@ html, body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: transparent;
+  background: var(--gray-300);
   border-radius: 3px;
 }
 :hover::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-color);
+  background: var(--gray-400);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-color-hover);
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--gray-700);
+}
+
+[data-theme="dark"] :hover::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
 }
 
 /* 全局默认按钮样式重置 */
@@ -68,6 +55,7 @@ button {
   color: var(--text-primary);
 }
 
+/* 文字辅助类 */
 .text-secondary {
   color: var(--text-secondary);
 }
@@ -81,20 +69,25 @@ button {
 .pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 8px 20px;
-  border-radius: 100px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .pill-btn:hover {
-  background: var(--accent-light);
+  background: var(--gray-100);
+}
+
+.pill-btn:active {
+  transform: scale(0.98);
 }
 
 .pill-btn--primary {
@@ -104,5 +97,48 @@ button {
 
 .pill-btn--primary:hover {
   background: var(--accent-hover);
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.25);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 页面切换动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 150ms ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 列表项进入动画 */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 骨架屏闪光动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.el-skeleton {
+  --el-skeleton-color: var(--gray-100);
+  --el-skeleton-to-color: var(--gray-200);
+}
+
+/* 深色模式适配 */
+[data-theme="dark"] .el-skeleton {
+  --el-skeleton-color: var(--gray-800);
+  --el-skeleton-to-color: var(--gray-700);
 }

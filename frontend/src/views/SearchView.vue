@@ -13,8 +13,8 @@
       <!-- Hybrid search bar -->
       <div v-if="searchMode === 'hybrid'" class="hybrid-toolbar">
         <div class="search-input-wrapper" :class="{ focused: hybridFocused }">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             v-model="hybridQuery"
@@ -27,7 +27,7 @@
           />
           <button v-if="hybridQuery" class="search-clear" @click="hybridQuery = ''">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
           <button class="search-submit" :disabled="!hybridQuery.trim() || searching" @click="doSearch">
@@ -92,8 +92,8 @@
     <!-- Search results -->
     <div class="search-results">
       <div v-if="!searched" class="results-placeholder">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <p>输入搜索条件开始查找照片</p>
       </div>
@@ -103,8 +103,8 @@
       </div>
 
       <div v-else-if="results.length === 0" class="results-empty">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <p>未找到匹配的照片</p>
       </div>
@@ -334,52 +334,39 @@ function formatDate(dateStr: string) {
 /* ===== 顶部工具栏 ===== */
 .search-toolbar {
   flex-shrink: 0;
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-[data-theme="dark"] .search-toolbar {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-card);
 }
 
 /* ===== Hybrid 搜索 ===== */
 .hybrid-toolbar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-3);
 }
 
 .search-input-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 3px 3px 3px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .search-input-wrapper.focused {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light), var(--shadow-md);
-}
-
-[data-theme="dark"] .search-input-wrapper {
-  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .search-icon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 .search-input {
@@ -387,15 +374,14 @@ function formatDate(dateStr: string) {
   border: none;
   background: transparent;
   outline: none;
-  font-size: var(--text-sm);
+  font-size: var(--text-body);
   color: var(--text-primary);
   font-family: inherit;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
 }
 
 .search-input::placeholder {
-  color: var(--text-tertiary);
-  font-weight: 300;
+  color: var(--text-placeholder);
 }
 
 .search-clear {
@@ -403,7 +389,7 @@ function formatDate(dateStr: string) {
   height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--gray-100);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -413,17 +399,17 @@ function formatDate(dateStr: string) {
 }
 
 .search-clear:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--gray-200);
 }
 
 .search-submit {
-  padding: 7px 18px;
-  border-radius: 10px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
   border: none;
   background: var(--accent);
   color: #fff;
-  font-size: var(--text-sm);
-  font-weight: 600;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
   min-width: 56px;
@@ -431,7 +417,6 @@ function formatDate(dateStr: string) {
 
 .search-submit:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 .search-submit:disabled {
@@ -440,8 +425,8 @@ function formatDate(dateStr: string) {
 }
 
 .spinner-sm {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
@@ -451,17 +436,17 @@ function formatDate(dateStr: string) {
 
 .hybrid-hints {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .hint-chip {
-  padding: 3px 10px;
-  border-radius: 100px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
-  background: var(--card-bg);
+  background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -480,12 +465,12 @@ function formatDate(dateStr: string) {
 .structured-toolbar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-2);
 }
 
 .filter-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -497,11 +482,11 @@ function formatDate(dateStr: string) {
 
 .filter-field input {
   width: 100%;
-  padding: 6px 10px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.5);
-  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  font-size: var(--text-body);
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
@@ -510,11 +495,7 @@ function formatDate(dateStr: string) {
 
 .filter-field input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-light);
-}
-
-[data-theme="dark"] .filter-field input {
-  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .filter-wide {
@@ -531,26 +512,26 @@ function formatDate(dateStr: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 4px;
+  padding-top: var(--space-1);
 }
 
 .filter-extras {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-4);
 }
 
 .filter-switch {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: var(--text-sm);
+  gap: var(--space-2);
+  font-size: var(--text-body);
   color: var(--text-secondary);
 }
 
 .filter-btns {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 /* ===== 搜索结果 ===== */
@@ -559,7 +540,7 @@ function formatDate(dateStr: string) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-4) var(--space-6);
 }
 
 .results-placeholder, .results-loading, .results-empty {
@@ -568,20 +549,20 @@ function formatDate(dateStr: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
-  gap: var(--space-sm);
+  color: var(--text-placeholder);
+  gap: var(--space-4);
 }
 
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-4);
   flex-shrink: 0;
 }
 
 .results-count {
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
@@ -589,25 +570,25 @@ function formatDate(dateStr: string) {
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
   overflow-y: auto;
   flex: 1;
 }
 
 /* ===== 结果卡片 ===== */
 .result-card {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xs);
   overflow: hidden;
-  background: var(--bg-secondary);
-  box-shadow: var(--card-shadow);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
-  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  animation: stagger-in 0.5s var(--ease-apple) both;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
 .result-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .result-card img {
@@ -615,11 +596,6 @@ function formatDate(dateStr: string) {
   aspect-ratio: 1;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s var(--ease-apple);
-}
-
-.result-card:hover img {
-  transform: scale(1.04);
 }
 
 .result-placeholder {
@@ -628,18 +604,18 @@ function formatDate(dateStr: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-secondary);
-  color: var(--text-tertiary);
+  background: var(--gray-100);
+  color: var(--text-placeholder);
 }
 
 .result-info {
-  padding: 6px 8px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .result-name {
   display: block;
-  font-size: var(--text-xs);
-  font-weight: 500;
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -648,12 +624,12 @@ function formatDate(dateStr: string) {
 .result-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   margin-top: 2px;
 }
 
 .result-date {
-  font-size: 10px;
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -662,14 +638,14 @@ function formatDate(dateStr: string) {
   font-size: 10px;
   color: #fff;
   background: var(--accent);
-  padding: 0 6px;
-  border-radius: 100px;
-  font-weight: 600;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
 }
 
 .results-more {
   text-align: center;
-  padding: var(--space-md);
+  padding: var(--space-4);
   flex-shrink: 0;
 }
 

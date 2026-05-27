@@ -16,8 +16,8 @@
       </div>
       <div v-else-if="folderData.items.length === 0" class="empty-wrap">
         <div class="empty-icon-float">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
         <p>暂无文件夹</p>
@@ -29,9 +29,6 @@
           class="folder-card"
           :style="{ animationDelay: `${Math.min(index * 40, 400)}ms` }"
           @click="enterFolder(folder.path)"
-          @mouseenter="onCardMouseEnter($event)"
-          @mouseleave="onCardMouseLeave($event)"
-          @mousemove="onCardMouseMove($event)"
         >
           <div class="folder-cover">
             <img
@@ -41,14 +38,13 @@
             />
             <div v-else class="folder-cover-empty">
               <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
               </svg>
             </div>
-            <div class="folder-cover-glow" />
           </div>
           <div class="folder-info">
             <span class="folder-name">{{ folder.name }}</span>
-            <span class="folder-count">{{ folder.photo_count }} 张照片</span>
+            <span class="folder-meta">{{ folder.photo_count }} 张照片 · {{ formatDate(folder.modified_at) }}</span>
           </div>
         </div>
       </div>
@@ -58,7 +54,7 @@
       <div v-if="currentFolder" class="current-folder-bar">
         <button class="pill-btn" @click="currentFolder = ''; fetchAllPhotos()">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
           </svg>
           返回全部
         </button>
@@ -121,29 +117,10 @@ async function onLoadMore() {
   await photoStore.loadMore()
 }
 
-// 3D tilt hover effect
-function onCardMouseEnter(e: MouseEvent) {
-  const card = e.currentTarget as HTMLElement
-  card.style.transition = 'transform 0.15s ease, box-shadow 0.3s var(--ease-apple)'
-}
-
-function onCardMouseLeave(e: MouseEvent) {
-  const card = e.currentTarget as HTMLElement
-  card.style.transition = 'all 400ms var(--ease-apple)'
-  card.style.transform = ''
-}
-
-function onCardMouseMove(e: MouseEvent) {
-  const card = e.currentTarget as HTMLElement
-  const rect = card.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
-  const centerX = rect.width / 2
-  const centerY = rect.height / 2
-  const rotateX = ((y - centerY) / centerY) * -3
-  const rotateY = ((x - centerX) / centerX) * 3
-
-  card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 </script>
 
@@ -157,104 +134,82 @@ function onCardMouseMove(e: MouseEvent) {
 .folder-toolbar {
   display: flex;
   align-items: center;
-  padding: var(--space-md) var(--space-lg);
-  gap: var(--space-md);
+  padding: var(--space-4) var(--space-6);
+  gap: var(--space-4);
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .folder-toolbar {
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .folders-grid {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-xl);
+  padding: var(--space-6);
 }
 
 .folder-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
 }
 
-/* ===== 文件夹卡片 — 3D 倾斜 ===== */
+/* ===== 文件夹卡片 ===== */
 .folder-card {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
-  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  box-shadow: var(--card-shadow);
-  background: var(--card-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  border: 1px solid var(--border-glass);
-  animation: stagger-in 0.5s var(--ease-apple) both;
-  will-change: transform;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  box-shadow: var(--shadow-xs);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  animation: stagger-in 0.4s var(--transition-normal) both;
 }
 
 .folder-card:hover {
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-4px);
 }
 
 .folder-cover {
-  height: 160px;
-  background: var(--bg-secondary);
+  height: 140px;
+  background: var(--gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  position: relative;
 }
 
 .folder-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s var(--ease-apple);
+  transition: transform var(--transition-slow);
 }
 
 .folder-card:hover .folder-cover img {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
 .folder-cover-empty {
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
   opacity: 0.3;
 }
 
-.folder-cover-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 50%);
-}
-
-.folder-card:hover .folder-cover-glow {
-  opacity: 1;
-}
-
 .folder-info {
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-3) var(--space-4);
 }
 
 .folder-name {
   display: block;
-  font-size: var(--text-base);
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.folder-count {
-  font-size: var(--text-sm);
+.folder-meta {
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -269,28 +224,26 @@ function onCardMouseMove(e: MouseEvent) {
 .current-folder-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-lg);
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-6);
+  background: var(--bg-card);
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color);
 }
 
 .current-folder-name {
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
   color: var(--text-secondary);
 }
 
 .loading-wrap, .empty-wrap {
-  padding: var(--space-xl);
+  padding: var(--space-6);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-  color: var(--text-tertiary);
+  gap: var(--space-4);
+  color: var(--text-placeholder);
 }
 
 .empty-icon-float {

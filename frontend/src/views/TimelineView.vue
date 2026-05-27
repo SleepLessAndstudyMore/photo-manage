@@ -141,60 +141,54 @@ async function onLoadMore() {
   width: 240px;
   min-width: 240px;
   overflow-y: auto;
-  padding: var(--space-lg) var(--space-md);
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  padding: var(--space-4) var(--space-3);
+  background: var(--bg-card);
   border-right: 1px solid var(--border-color);
 }
 
-[data-theme="dark"] .timeline-sidebar {
-  background: rgba(255, 255, 255, 0.03);
-}
-
 .sidebar-title {
-  margin: 0 0 var(--space-lg);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-overline);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-placeholder);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-wider);
 }
 
 .sidebar-loading, .sidebar-empty {
-  padding: var(--space-lg) 0;
+  padding: var(--space-4) 0;
   text-align: center;
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
 }
 
 .timeline-tree {
-  font-size: var(--text-sm);
+  font-size: var(--text-body);
 }
 
 .year-item, .month-item, .day-item {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  gap: var(--space-xs);
+  gap: var(--space-2);
   transition: all var(--transition-fast);
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
 }
 
 .year-item:hover, .month-item:hover, .day-item:hover {
-  background: var(--accent-light);
+  background: var(--gray-50);
 }
 
 .year-item.active, .month-item.active, .day-item.active {
   background: var(--accent-light);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .expand-icon {
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   transition: transform var(--transition-fast);
 }
 
@@ -208,16 +202,16 @@ async function onLoadMore() {
 
 .year-count, .month-count, .day-count {
   color: var(--text-tertiary);
-  font-size: var(--text-xs);
+  font-size: var(--text-caption);
   font-variant-numeric: tabular-nums;
 }
 
 .months-list {
-  padding-left: var(--space-md);
+  padding-left: var(--space-4);
 }
 
 .days-list {
-  padding-left: var(--space-md);
+  padding-left: var(--space-4);
 }
 
 .timeline-content {
@@ -228,34 +222,34 @@ async function onLoadMore() {
 }
 
 .content-header {
-  padding: var(--space-xl) var(--space-lg) var(--space-md);
+  padding: var(--space-6) var(--space-6) var(--space-4);
   display: flex;
   align-items: baseline;
-  gap: var(--space-lg);
+  gap: var(--space-4);
   flex-shrink: 0;
 }
 
 .content-title {
   margin: 0;
-  font-size: var(--text-3xl);
-  font-weight: 200;
-  letter-spacing: -1px;
+  font-size: var(--text-h1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
 }
 
 .title-year {
-  font-weight: 300;
+  font-weight: var(--font-weight-bold);
 }
 
 .title-sep {
-  margin: 0 4px;
+  margin: 0 var(--space-1);
   color: var(--text-tertiary);
-  font-weight: 200;
+  font-weight: var(--font-weight-regular);
 }
 
 .photo-total {
   color: var(--text-tertiary);
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
   font-variant-numeric: tabular-nums;
 }
 </style>

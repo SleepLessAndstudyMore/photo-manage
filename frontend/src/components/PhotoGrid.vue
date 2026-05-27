@@ -40,13 +40,18 @@
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
-            <!-- 边缘高光 -->
-            <div class="photo-card-highlight" />
-            <div v-if="photo.is_video" class="video-overlay">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
-              <span v-if="photo.duration" class="duration-label">{{ formatDuration(photo.duration) }}</span>
+            <!-- 信息叠加层 -->
+            <div class="photo-info-overlay">
+              <div class="photo-info-left">
+                <span v-if="photo.date_taken" class="photo-date">{{ formatDate(photo.date_taken) }}</span>
+              </div>
+              <div class="photo-info-right">
+                <span v-if="photo.is_video" class="video-badge">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </span>
+              </div>
             </div>
             <div v-if="photo.file_missing" class="missing-overlay">
               <span>文件丢失</span>
@@ -91,7 +96,7 @@ const scrollRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
 const columns = ref(4)
 const MIN_COL_WIDTH = 220
-const GAP = 20
+const GAP = 4
 
 function updateColumns() {
   if (!containerRef.value) return
@@ -138,6 +143,11 @@ function formatDuration(seconds: number): string {
   const s = Math.floor(seconds % 60)
   return `${m}:${s.toString().padStart(2, '0')}`
 }
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 </script>
 
 <style scoped>
@@ -150,33 +160,30 @@ function formatDuration(seconds: number): string {
 .photo-scroll-area {
   height: 100%;
   overflow-y: auto;
-  padding: var(--space-lg);
+  padding: var(--space-4);
 }
 
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  gap: var(--space-1);
 }
 
-/* ===== 照片卡片 — Apple Photos 风格 ===== */
+/* ===== 照片卡片 ===== */
 .photo-card {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xs);
   overflow: hidden;
-  box-shadow: var(--card-shadow);
-  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
-  background: var(--card-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  aspect-ratio: 1;
   position: relative;
-  animation: stagger-in 0.5s var(--ease-apple) both;
+  aspect-ratio: 1;
+  animation: stagger-in 0.4s var(--transition-normal) both;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .photo-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
 }
 
 .photo-card-inner {
@@ -184,6 +191,7 @@ function formatDuration(seconds: number): string {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  border-radius: var(--radius-xs);
 }
 
 .thumbnail-img {
@@ -191,27 +199,6 @@ function formatDuration(seconds: number): string {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s var(--ease-apple);
-}
-
-.photo-card:hover .thumbnail-img {
-  transform: scale(1.05);
-}
-
-/* 边缘高光效果 */
-.photo-card-highlight {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, transparent 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.photo-card:hover .photo-card-highlight {
-  opacity: 1;
 }
 
 .thumbnail-placeholder {
@@ -220,27 +207,44 @@ function formatDuration(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary);
-  background: var(--bg-secondary);
+  color: var(--text-placeholder);
+  background: var(--gray-100);
 }
 
-.video-overlay {
+/* ===== 信息叠加层 ===== */
+.photo-info-overlay {
   position: absolute;
-  bottom: var(--space-sm);
-  left: var(--space-sm);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.4));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.photo-card:hover .photo-info-overlay {
+  opacity: 1;
+}
+
+.photo-date {
+  font-size: var(--text-caption);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.video-badge {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #fff;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-size: var(--text-xs);
-  backdrop-filter: blur(12px);
-}
-
-.duration-label {
-  font-size: var(--text-xs);
+  color: #fff;
 }
 
 .missing-overlay {
@@ -252,14 +256,14 @@ function formatDuration(seconds: number): string {
   background: rgba(128, 128, 128, 0.7);
   backdrop-filter: blur(4px);
   color: #fff;
-  font-size: var(--text-sm);
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-semibold);
 }
 
 .favorite-badge {
   position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
+  top: var(--space-1);
+  right: var(--space-1);
   color: #FFD60A;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
 }
@@ -268,14 +272,14 @@ function formatDuration(seconds: number): string {
 .skeleton-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  gap: var(--space-1);
 }
 
 .skeleton-card {
   aspect-ratio: 1;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xs);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--gray-100);
 }
 
 /* ===== 空状态 ===== */
@@ -285,20 +289,20 @@ function formatDuration(seconds: number): string {
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: var(--space-md);
-  color: var(--text-tertiary);
+  gap: var(--space-4);
+  color: var(--text-placeholder);
 }
 
 .empty-illustration svg {
-  width: 100px;
-  height: 100px;
-  color: var(--text-tertiary);
+  width: 120px;
+  height: 120px;
+  color: var(--gray-300);
 }
 
 .empty-text {
-  font-size: var(--text-base);
+  font-size: var(--text-h3);
   color: var(--text-secondary);
-  font-weight: 300;
+  font-weight: var(--font-weight-regular);
 }
 
 /* ===== 加载更多 ===== */
@@ -306,16 +310,16 @@ function formatDuration(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
-  padding: var(--space-lg);
+  gap: var(--space-2);
+  padding: var(--space-6);
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
 }
 
 .loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-color);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--gray-200);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
