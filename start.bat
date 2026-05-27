@@ -17,9 +17,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-for /f "tokens=2" %%i in ('python --version 2^>^&1') do set pyver=%%i
-set py_major=%pyver:~0,1%
-set py_minor=%pyver:~2,1%
+for /f "tokens=2 delims= " %%i in ('python --version 2^>^&1') do set pyver=%%i
+
+REM 解析主版本和次版本（支持 3.10、3.11、3.12 等两位数次版本）
+for /f "tokens=1,2 delims=." %%a in ("%pyver%") do (
+    set py_major=%%a
+    set py_minor=%%b
+)
+
 if %py_major% lss 3 (
     echo [错误] 需要 Python 3.10+，当前版本: %pyver%
     echo 下载地址: https://www.python.org/downloads/
@@ -54,9 +59,9 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM ===== 安装依赖 =====
+REM ===== 检查依赖是否已安装 =====
 echo [检查] 依赖安装状态...
-pip list --format=columns >nul 2>&1
+python -c "import fastapi" >nul 2>&1
 if errorlevel 1 (
     echo [首次启动] 正在安装依赖（可能需要几分钟）...
 
@@ -92,12 +97,14 @@ if errorlevel 1 (
         exit /b 1
     )
     echo [OK] 依赖安装完成
+) else (
+    echo [OK] 依赖已就绪
 )
 
 REM ===== 端口检测 =====
 set PORT=8000
 :check_port
-python -c "import socket; s=socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', %PORT%)); s.close()" >nul 2>&1
+python -c "import socket; s=socket.socket(); s.settimeout(0.5); s.connect(('127.0.0.1', %PORT%)); s.close()" >nul 2>&1
 if errorlevel 1 (
     echo [OK] 端口 %PORT% 可用
 ) else (
