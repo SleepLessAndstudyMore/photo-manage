@@ -70,6 +70,12 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
             </div>
+            <!-- 编辑按钮 -->
+            <button class="card-edit-btn" @click.stop="openRename(cluster)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
           </div>
           <div class="card-info">
             <span class="card-name">{{ cluster.name || '人物 ' + cluster.id }}</span>
@@ -87,13 +93,42 @@
         <button class="pill-btn" :disabled="loading" @click="loadMore">加载更多</button>
       </div>
     </template>
+
+    <!-- 重命名对话框 -->
+    <el-dialog v-model="renameVisible" title="修改人物名称" width="360px" class="glass-dialog" @closed="renameName = ''">
+      <div class="rename-preview">
+        <img
+          v-if="renameCluster?.cover_thumbnail"
+          :src="'/thumbnails/' + renameCluster.cover_thumbnail"
+          class="rename-avatar"
+        />
+        <div v-else class="rename-avatar-placeholder">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      </div>
+      <el-input
+        v-model="renameName"
+        placeholder="输入人物名称"
+        maxlength="64"
+        show-word-limit
+        clearable
+        autofocus
+        @keyup.enter="saveRename"
+      />
+      <template #footer>
+        <button class="pill-btn" @click="renameVisible = false">取消</button>
+        <button class="pill-btn pill-btn--primary" :disabled="!renameName.trim()" @click="saveRename">保存</button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getFaceClusters, detectFaces, clusterFaces, mergeFaceClusters } from '@/api/faces'
+import { getFaceClusters, detectFaces, clusterFaces, mergeFaceClusters, updateFaceCluster } from '@/api/faces'
 import type { FaceCluster } from '@/types/face'
 
 const router = useRouter()
@@ -106,6 +141,11 @@ const detecting = ref(false)
 const clustering = ref(false)
 const selectedIds = ref<number[]>([])
 const currentPage = ref(1)
+
+// 重命名
+const renameVisible = ref(false)
+const renameCluster = ref<FaceCluster | null>(null)
+const renameName = ref('')
 
 onMounted(() => {
   fetchClusters()
@@ -164,6 +204,23 @@ async function onMerge() {
 
 function goToDetail(id: number) {
   router.push(`/people/${id}`)
+}
+
+function openRename(cluster: FaceCluster) {
+  renameCluster.value = cluster
+  renameName.value = cluster.name || ''
+  renameVisible.value = true
+}
+
+async function saveRename() {
+  if (!renameCluster.value || !renameName.value.trim()) return
+  try {
+    await updateFaceCluster(renameCluster.value.id, { name: renameName.value.trim() })
+    renameCluster.value.name = renameName.value.trim()
+    renameVisible.value = false
+  } catch {
+    // ignore
+  }
 }
 
 async function onDetectFaces() {
@@ -332,6 +389,42 @@ async function onClusterFaces() {
   object-fit: cover;
 }
 
+/* 编辑按钮 */
+.card-edit-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s var(--ease-apple);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .card-edit-btn {
+  background: rgba(50, 50, 54, 0.85);
+}
+
+.cluster-card:hover .card-edit-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card-edit-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 .avatar-placeholder {
   color: var(--text-tertiary);
   opacity: 0.4;
@@ -390,5 +483,44 @@ async function onClusterFaces() {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
+}
+
+/* 重命名对话框 */
+.rename-preview {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+}
+
+.rename-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.rename-avatar-placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+
+:deep(.glass-dialog .el-dialog) {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+}
+
+[data-theme="dark"] :deep(.glass-dialog .el-dialog) {
+  background: rgba(30, 30, 34, 0.8);
 }
 </style>
