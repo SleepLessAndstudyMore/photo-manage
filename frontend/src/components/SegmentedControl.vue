@@ -54,47 +54,51 @@ onMounted(() => nextTick(updateSlider))
 .segmented-control {
   display: inline-flex;
   position: relative;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 9px;
-  padding: 3px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 2px;
 }
 
 [data-theme="dark"] .segmented-control {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .segmented-slider {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  height: calc(100% - 6px);
-  border-radius: 7px;
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.3s var(--ease-apple), width 0.3s var(--ease-apple);
+  top: 2px;
+  left: 2px;
+  height: calc(100% - 4px);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s var(--ease-apple), width 0.25s var(--ease-apple);
   z-index: 0;
+}
+
+[data-theme="dark"] .segmented-slider {
+  background: rgba(50, 50, 54, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .segmented-item {
   position: relative;
   z-index: 1;
   padding: 5px 16px;
-  border-radius: 7px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: color 0.2s var(--ease-apple);
   white-space: nowrap;
+  line-height: 1.4;
 }
 
 .segmented-item.active {
   color: var(--text-primary);
+  font-weight: 600;
 }
 
 .segmented-item:hover:not(.active) {
