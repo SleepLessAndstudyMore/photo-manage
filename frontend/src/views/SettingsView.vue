@@ -69,7 +69,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="photo_count" label="照片数" width="80" />
-        <el-table-column prop="last_scan_at" label="上次扫描" width="220">
+        <el-table-column prop="last_scan_at" label="上次扫描" width="280">
           <template #default="{ row }">
             {{ row.last_scan_at ? new Date(row.last_scan_at).toLocaleString('zh-CN') : '-' }}
           </template>
