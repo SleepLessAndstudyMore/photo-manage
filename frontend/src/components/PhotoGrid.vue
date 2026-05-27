@@ -10,9 +10,9 @@
     <div v-else-if="!loading && photos.length === 0" class="empty-state">
       <div class="empty-illustration">
         <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="20" y="30" width="80" height="60" rx="8" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
-          <circle cx="55" cy="58" r="10" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
-          <path d="M30 78l15-15 10 10 15-20 20 25" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+          <rect x="20" y="30" width="80" height="60" rx="12" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.2"/>
+          <circle cx="55" cy="58" r="10" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.2"/>
+          <path d="M30 78l15-15 10 10 15-20 20 25" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
         </svg>
       </div>
       <p class="empty-text">{{ emptyText || '暂无照片' }}</p>
@@ -20,9 +20,10 @@
     <div v-else ref="scrollRef" class="photo-scroll-area" @scroll="onScroll">
       <div class="photo-grid">
         <div
-          v-for="photo in photos"
+          v-for="(photo, index) in photos"
           :key="photo.id"
           class="photo-card"
+          :style="{ animationDelay: `${Math.min(index * 30, 300)}ms` }"
           @click="$emit('photo-click', photo)"
         >
           <div class="photo-card-inner">
@@ -39,6 +40,12 @@
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
+            <!-- Hover 玻璃信息层 -->
+            <div class="photo-card-overlay">
+              <span class="overlay-name">{{ photo.file_name }}</span>
+            </div>
+            <!-- 边缘高光 -->
+            <div class="photo-card-highlight" />
             <div v-if="photo.is_video" class="video-overlay">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3"/>
@@ -88,7 +95,7 @@ const scrollRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
 const columns = ref(4)
 const MIN_COL_WIDTH = 220
-const GAP = 16
+const GAP = 20
 
 function updateColumns() {
   if (!containerRef.value) return
@@ -123,9 +130,7 @@ onUnmounted(() => {
   intersectionObserver?.disconnect()
 })
 
-function onScroll() {
-  // Handled by IntersectionObserver
-}
+function onScroll() {}
 
 function onImageError(e: Event) {
   const img = e.target as HTMLImageElement
@@ -149,31 +154,32 @@ function formatDuration(seconds: number): string {
 .photo-scroll-area {
   height: 100%;
   overflow-y: auto;
-  padding: var(--space-md);
+  padding: var(--space-lg);
 }
 
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--space-md);
+  gap: 20px;
 }
 
-/* ===== 照片卡片 — 毛玻璃悬浮卡片 ===== */
+/* ===== 照片卡片 — Apple Photos 风格 ===== */
 .photo-card {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--card-shadow);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
   background: var(--card-bg);
   backdrop-filter: var(--card-blur);
   -webkit-backdrop-filter: var(--card-blur);
   aspect-ratio: 1;
+  position: relative;
+  animation: stagger-in 0.5s var(--ease-apple) both;
 }
 
 .photo-card:hover {
-  transform: scale(1.02);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--card-shadow-hover);
 }
 
@@ -189,11 +195,58 @@ function formatDuration(seconds: number): string {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s var(--ease-apple);
 }
 
 .photo-card:hover .thumbnail-img {
   transform: scale(1.05);
+}
+
+/* Hover 玻璃信息层 */
+.photo-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 220ms var(--ease-apple);
+  pointer-events: none;
+}
+
+.photo-card:hover .photo-card-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.overlay-name {
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+/* 边缘高光效果 */
+.photo-card-highlight {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.photo-card:hover .photo-card-highlight {
+  opacity: 1;
 }
 
 .thumbnail-placeholder {
@@ -214,11 +267,11 @@ function formatDuration(seconds: number): string {
   align-items: center;
   gap: 4px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 10px;
   border-radius: 100px;
   font-size: var(--text-xs);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
 }
 
 .duration-label {
@@ -232,17 +285,17 @@ function formatDuration(seconds: number): string {
   align-items: center;
   justify-content: center;
   background: rgba(128, 128, 128, 0.7);
+  backdrop-filter: blur(4px);
   color: #fff;
   font-size: var(--text-sm);
   font-weight: 600;
-  backdrop-filter: blur(4px);
 }
 
 .favorite-badge {
   position: absolute;
   top: var(--space-sm);
   right: var(--space-sm);
-  color: #f5a623;
+  color: #FFD60A;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
 }
 
@@ -250,12 +303,12 @@ function formatDuration(seconds: number): string {
 .skeleton-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--space-md);
+  gap: 20px;
 }
 
 .skeleton-card {
   aspect-ratio: 1;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--bg-secondary);
 }
@@ -280,6 +333,7 @@ function formatDuration(seconds: number): string {
 .empty-text {
   font-size: var(--text-base);
   color: var(--text-secondary);
+  font-weight: 300;
 }
 
 /* ===== 加载更多 ===== */

@@ -1,142 +1,181 @@
 <template>
   <div class="view-search">
-    <div class="search-header">
-      <h2>搜索</h2>
-      <div class="search-header-actions">
-        <div class="search-mode-tabs">
-          <el-radio-group v-model="searchMode" size="small">
-            <el-radio-button value="structured">结构化搜索</el-radio-button>
-            <el-radio-button value="hybrid">自然语言搜索</el-radio-button>
-          </el-radio-group>
+    <!-- 搜索区 -->
+    <div class="search-hero">
+      <h2 class="search-title">搜索</h2>
+      <div class="search-mode-tabs">
+        <button
+          class="mode-tab"
+          :class="{ active: searchMode === 'structured' }"
+          @click="searchMode = 'structured'"
+        >
+          结构化搜索
+        </button>
+        <button
+          class="mode-tab"
+          :class="{ active: searchMode === 'hybrid' }"
+          @click="searchMode = 'hybrid'"
+        >
+          自然语言
+        </button>
+      </div>
+
+      <!-- Hybrid search -->
+      <div v-if="searchMode === 'hybrid'" class="hybrid-search-box">
+        <div class="search-input-wrapper" :class="{ focused: hybridFocused }">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            v-model="hybridQuery"
+            type="text"
+            class="search-input"
+            placeholder="描述你想找的照片，例如：去年在海边的猫..."
+            @focus="hybridFocused = true"
+            @blur="hybridFocused = false"
+            @keyup.enter="doSearch"
+          />
+          <button v-if="hybridQuery" class="search-clear" @click="hybridQuery = ''">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          <button class="search-submit" :disabled="!hybridQuery.trim() || searching" @click="doSearch">
+            <span v-if="searching" class="spinner-sm" />
+            <span v-else>搜索</span>
+          </button>
         </div>
-        <el-button size="small" text :loading="embeddingLoading" @click="onGenerateEmbeddings">
-          生成向量
-        </el-button>
+        <div class="search-hints">
+          <span class="hint-label">试试：</span>
+          <button class="hint-chip" @click="hybridQuery = '去年在海边的猫'">去年在海边的猫</button>
+          <button class="hint-chip" @click="hybridQuery = '今年旅行'">今年旅行</button>
+          <button class="hint-chip" @click="hybridQuery = '最近7天的照片'">最近7天的照片</button>
+        </div>
+        <div class="search-actions">
+          <button class="pill-btn" :loading="embeddingLoading" @click="onGenerateEmbeddings">
+            生成向量
+          </button>
+        </div>
+      </div>
+
+      <!-- Structured search -->
+      <div v-else class="structured-filters">
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label>文件名</label>
+            <input v-model="structuredFilters.file_name" type="text" placeholder="模糊搜索" />
+          </div>
+          <div class="filter-item">
+            <label>相机型号</label>
+            <input v-model="structuredFilters.camera_model" type="text" placeholder="如: Sony A7M4" />
+          </div>
+          <div class="filter-item">
+            <label>镜头</label>
+            <input v-model="structuredFilters.lens_model" type="text" placeholder="如: FE 24-70mm" />
+          </div>
+          <div class="filter-item">
+            <label>日期从</label>
+            <el-date-picker v-model="structuredFilters.date_from" type="date" value-format="YYYY-MM-DD" size="default" />
+          </div>
+          <div class="filter-item">
+            <label>日期至</label>
+            <el-date-picker v-model="structuredFilters.date_to" type="date" value-format="YYYY-MM-DD" size="default" />
+          </div>
+          <div class="filter-item">
+            <label>标签</label>
+            <el-select v-model="structuredFilters.tag_ids" multiple clearable placeholder="选择标签" style="width: 100%">
+              <el-option v-for="tag in allTags" :key="tag.id" :label="tag.name_zh || tag.name" :value="tag.id" />
+            </el-select>
+          </div>
+          <div class="filter-item">
+            <label>最低评分</label>
+            <el-rate v-model="structuredFilters.rating_min" :max="5" />
+          </div>
+          <div class="filter-item filter-actions">
+            <el-switch v-model="structuredFilters.is_favorite" />
+            <span class="switch-label">仅收藏</span>
+            <el-radio-group v-model="structuredFilters.logic" size="small" style="margin-left: auto">
+              <el-radio-button value="AND">与</el-radio-button>
+              <el-radio-button value="OR">或</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
+        <div class="filter-bottom">
+          <button class="pill-btn pill-btn--primary" :loading="searching" @click="doSearch">搜索</button>
+          <button class="pill-btn" @click="resetFilters">重置</button>
+        </div>
       </div>
     </div>
 
-    <div class="search-body">
-      <!-- Hybrid search -->
-      <template v-if="searchMode === 'hybrid'">
-        <div class="hybrid-input-row">
-          <el-input
-            v-model="hybridQuery"
-            placeholder="例如：去年在海边的猫、今年旅行拍的照片..."
-            size="large"
-            clearable
-            @keyup.enter="doSearch"
-          />
-          <el-button type="primary" size="large" :loading="searching" @click="doSearch">
-            搜索
-          </el-button>
+    <!-- Search results -->
+    <div class="search-results">
+      <div v-if="!searched" class="results-placeholder">
+        <div class="placeholder-icon">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
         </div>
-        <div class="search-hint">
-          <span>试试: "去年在海边的猫", "今年旅行", "最近7天的照片"</span>
-        </div>
-      </template>
+        <p>输入搜索条件开始查找照片</p>
+      </div>
 
-      <!-- Structured search -->
+      <div v-else-if="searching" class="results-loading">
+        <el-skeleton :rows="3" animated />
+      </div>
+
+      <div v-else-if="results.length === 0" class="results-empty">
+        <div class="placeholder-icon">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </div>
+        <p>未找到匹配的照片</p>
+      </div>
+
       <template v-else>
-        <div class="structured-filters">
-          <el-form :inline="true" :model="structuredFilters" label-width="80px">
-            <el-form-item label="文件名">
-              <el-input v-model="structuredFilters.file_name" placeholder="模糊搜索" clearable />
-            </el-form-item>
-            <el-form-item label="相机型号">
-              <el-input v-model="structuredFilters.camera_model" placeholder="如: Sony A7M4" clearable />
-            </el-form-item>
-            <el-form-item label="镜头">
-              <el-input v-model="structuredFilters.lens_model" placeholder="如: FE 24-70mm" clearable />
-            </el-form-item>
-            <el-form-item label="日期从">
-              <el-date-picker v-model="structuredFilters.date_from" type="date" value-format="YYYY-MM-DD" />
-            </el-form-item>
-            <el-form-item label="日期至">
-              <el-date-picker v-model="structuredFilters.date_to" type="date" value-format="YYYY-MM-DD" />
-            </el-form-item>
-            <el-form-item label="标签">
-              <el-select v-model="structuredFilters.tag_ids" multiple clearable placeholder="选择标签" style="width: 200px">
-                <el-option v-for="tag in allTags" :key="tag.id" :label="tag.name_zh || tag.name" :value="tag.id" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="最低评分">
-              <el-rate v-model="structuredFilters.rating_min" :max="5" />
-            </el-form-item>
-            <el-form-item label="收藏">
-              <el-switch v-model="structuredFilters.is_favorite" />
-            </el-form-item>
-            <el-form-item label="逻辑">
-              <el-radio-group v-model="structuredFilters.logic">
-                <el-radio value="AND">与</el-radio>
-                <el-radio value="OR">或</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" :loading="searching" @click="doSearch">搜索</el-button>
-              <el-button @click="resetFilters">重置</el-button>
-            </el-form-item>
-          </el-form>
-        </div>
-      </template>
-
-      <!-- Search results -->
-      <div class="search-results">
-        <div v-if="!searched" class="results-placeholder">
-          <el-icon :size="48"><Search /></el-icon>
-          <p>输入搜索条件开始查找照片</p>
-        </div>
-
-        <div v-else-if="searching" class="results-loading">
-          <el-skeleton :rows="3" animated />
-        </div>
-
-        <div v-else-if="results.length === 0" class="results-empty">
-          <el-icon :size="48"><Search /></el-icon>
-          <p>未找到匹配的照片</p>
-        </div>
-
-        <template v-else>
-          <div class="results-header">
-            <span>找到 {{ total }} 张照片</span>
-            <el-radio-group v-model="sortBy" size="small" @change="doSearch">
-              <el-radio-button value="date_taken">日期</el-radio-button>
-              <el-radio-button value="rating">评分</el-radio-button>
-              <el-radio-button value="file_name">名称</el-radio-button>
-            </el-radio-group>
+        <div class="results-header">
+          <span class="results-count">找到 {{ total }} 张照片</span>
+          <div class="sort-tabs">
+            <button class="sort-tab" :class="{ active: sortBy === 'date_taken' }" @click="sortBy = 'date_taken'; doSearch()">日期</button>
+            <button class="sort-tab" :class="{ active: sortBy === 'rating' }" @click="sortBy = 'rating'; doSearch()">评分</button>
+            <button class="sort-tab" :class="{ active: sortBy === 'file_name' }" @click="sortBy = 'file_name'; doSearch()">名称</button>
           </div>
-          <div class="results-grid">
-            <div
-              v-for="photo in results"
-              :key="photo.id"
-              class="result-item"
-              @click="goToPhoto(photo.id)"
-            >
+        </div>
+        <div class="results-grid">
+          <div
+            v-for="(photo, index) in results"
+            :key="photo.id"
+            class="result-card"
+            :style="{ animationDelay: `${Math.min(index * 30, 300)}ms` }"
+            @click="goToPhoto(photo.id)"
+          >
+            <div class="result-card-inner">
               <img
                 v-if="photo.thumbnail_path"
                 :src="`/thumbnails/${photo.thumbnail_path}`"
                 :alt="photo.file_name"
+                loading="lazy"
               />
               <div v-else class="result-placeholder">
-                <el-icon><PictureFilled /></el-icon>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
               </div>
-              <div class="result-info">
+              <div class="result-overlay">
                 <span class="result-name">{{ photo.file_name }}</span>
                 <div class="result-meta">
-                  <span v-if="photo.date_taken" class="result-date">
-                    {{ formatDate(photo.date_taken) }}
-                  </span>
+                  <span v-if="photo.date_taken" class="result-date">{{ formatDate(photo.date_taken) }}</span>
                   <span v-if="searchMode === 'hybrid' && photo.similarity_score != null" class="result-score">
-                    {{ (photo.similarity_score * 100).toFixed(0) }}% 匹配
+                    {{ (photo.similarity_score * 100).toFixed(0) }}%
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          <div v-if="hasMore" class="results-more">
-            <el-button text @click="loadMore">加载更多</el-button>
-          </div>
-        </template>
-      </div>
+        </div>
+        <div v-if="hasMore" class="results-more">
+          <button class="pill-btn" @click="loadMore">加载更多</button>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -144,7 +183,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, PictureFilled } from '@element-plus/icons-vue'
 import { searchPhotos, generateEmbeddings } from '@/api/photos'
 import { getTags } from '@/api/tags'
 
@@ -166,6 +204,7 @@ const router = useRouter()
 
 const searchMode = ref<'structured' | 'hybrid'>('structured')
 const hybridQuery = ref('')
+const hybridFocused = ref(false)
 const allTags = ref<TagItem[]>([])
 const searching = ref(false)
 const searched = ref(false)
@@ -192,7 +231,6 @@ onMounted(async () => {
     const { data } = await getTags({ page_size: 200 })
     allTags.value = data.items ?? []
   } catch { /* ignore */ }
-  // 首次进入自动触发搜索
   doSearch()
 })
 
@@ -308,64 +346,290 @@ function formatDate(dateStr: string) {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
-}
-.search-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-lg);
-  flex-shrink: 0;
-}
-.search-header h2 {
-  margin: 0;
-  font-size: var(--text-2xl);
-}
-.search-header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-.search-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
-.hybrid-input-row {
+
+/* ===== 搜索 Hero 区 ===== */
+.search-hero {
+  padding: var(--space-xl) var(--space-xl) var(--space-lg);
+  flex-shrink: 0;
+}
+
+.search-title {
+  margin: 0 0 var(--space-lg);
+  font-size: var(--text-3xl);
+  font-weight: 200;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+}
+
+.search-mode-tabs {
   display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-lg);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  padding: 3px;
+  width: fit-content;
+}
+
+[data-theme="dark"] .search-mode-tabs {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mode-tab {
+  padding: 7px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mode-tab.active {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+/* ===== Hybrid 搜索框 ===== */
+.hybrid-search-box {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-md);
 }
-.search-hint {
-  margin-top: var(--space-md);
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 4px 4px 4px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.search-input-wrapper.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-light), var(--shadow-md);
+}
+
+[data-theme="dark"] .search-input-wrapper {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-family: inherit;
+  padding: 10px 0;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 300;
+}
+
+.search-clear {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.search-clear:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.search-submit {
+  padding: 8px 20px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 64px;
+}
+
+.search-submit:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.search-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+.search-hints {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.hint-label {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.hint-chip {
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
+}
+
+.hint-chip:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.search-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* ===== Structured filters ===== */
+.structured-filters {
+  padding: var(--space-lg);
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-item label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filter-item input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.filter-item input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+[data-theme="dark"] .filter-item input {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.filter-actions {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.switch-label {
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
-.structured-filters {
-  padding: var(--space-lg);
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-lg);
-  flex-shrink: 0;
+
+.filter-bottom {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color);
 }
+
+/* ===== 搜索结果 ===== */
 .search-results {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 0 var(--space-xl) var(--space-xl);
 }
+
 .results-placeholder, .results-loading, .results-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   gap: var(--space-md);
 }
+
+.placeholder-icon {
+  opacity: 0.3;
+  animation: float 4s ease-in-out infinite;
+}
+
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -373,71 +637,153 @@ function formatDate(dateStr: string) {
   margin-bottom: var(--space-md);
   flex-shrink: 0;
 }
+
+.results-count {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sort-tabs {
+  display: flex;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+[data-theme="dark"] .sort-tabs {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sort-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sort-tab.active {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
   overflow-y: auto;
   flex: 1;
 }
-.result-item {
-  cursor: pointer;
-  border-radius: var(--radius-md);
+
+/* 结果卡片 — Apple 风格 */
+.result-card {
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
   box-shadow: var(--card-shadow);
-  transition: all var(--transition-fast);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: stagger-in 0.5s var(--ease-apple) both;
 }
-.result-item:hover {
-  transform: translateY(-2px);
+
+.result-card:hover {
+  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--card-shadow-hover);
 }
-.result-item img {
-  width: 100%;
+
+.result-card-inner {
+  position: relative;
   aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.result-card-inner img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.4s var(--ease-apple);
 }
+
+.result-card:hover .result-card-inner img {
+  transform: scale(1.05);
+}
+
 .result-placeholder {
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--bg-secondary);
   color: var(--text-tertiary);
 }
-.result-info {
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+
+.result-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 220ms var(--ease-apple);
 }
+
+.result-card:hover .result-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .result-name {
+  color: #fff;
   font-size: var(--text-sm);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
 }
+
 .result-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  margin-top: 4px;
 }
+
 .result-date {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.7);
 }
+
 .result-score {
-  font-size: var(--text-sm);
-  color: var(--accent);
-  font-weight: 500;
-  background: var(--accent-light);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: #fff;
+  background: var(--accent);
+  padding: 1px 8px;
+  border-radius: 100px;
+  font-weight: 600;
 }
+
 .results-more {
   text-align: center;
   padding: var(--space-md);
   flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

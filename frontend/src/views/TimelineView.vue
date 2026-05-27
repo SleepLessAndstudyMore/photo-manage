@@ -18,7 +18,7 @@
             <el-icon class="expand-icon" :class="{ expanded: expandedYears.has(y.year) }">
               <ArrowRight />
             </el-icon>
-            <span class="year-label">{{ y.year }} 年</span>
+            <span class="year-label">{{ y.year }}</span>
             <span class="year-count">{{ y.count }}</span>
           </div>
           <div v-if="expandedYears.has(y.year)" class="months-list">
@@ -50,12 +50,14 @@
     </aside>
     <main class="timeline-content">
       <div class="content-header">
-        <h2 v-if="selectedYear">
-          {{ selectedYear }} 年
-          <template v-if="selectedMonth">{{ selectedMonth }} 月</template>
-          <template v-if="selectedDay">{{ selectedDay }} 日</template>
+        <h2 class="content-title" v-if="selectedYear">
+          <span class="title-year">{{ selectedYear }}</span>
+          <template v-if="selectedMonth"><span class="title-sep">/</span>{{ selectedMonth }}</template>
+          <template v-if="selectedDay"><span class="title-sep">/</span>{{ selectedDay }}</template>
         </h2>
-        <h2 v-else>全部照片</h2>
+        <h2 class="content-title" v-else>
+          <span class="title-year">全部照片</span>
+        </h2>
         <span class="photo-total">{{ total }} 张照片</span>
       </div>
       <PhotoGrid
@@ -134,85 +136,126 @@ async function onLoadMore() {
   display: flex;
   height: 100%;
 }
+
 .timeline-sidebar {
-  width: 260px;
-  min-width: 260px;
+  width: 240px;
+  min-width: 240px;
   overflow-y: auto;
+  padding: var(--space-lg) var(--space-md);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid var(--border-color);
-  padding: var(--space-md);
-  background: var(--card-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
 }
+
+[data-theme="dark"] .timeline-sidebar {
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .sidebar-title {
-  margin: 0 0 var(--space-sm);
-  font-size: var(--text-base);
+  margin: 0 0 var(--space-lg);
+  font-size: var(--text-sm);
   font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
+
 .sidebar-loading, .sidebar-empty {
   padding: var(--space-lg) 0;
   text-align: center;
   color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
+
 .timeline-tree {
   font-size: var(--text-sm);
 }
+
 .year-item, .month-item, .day-item {
   display: flex;
   align-items: center;
-  padding: var(--space-xs) var(--space-sm);
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   gap: var(--space-xs);
   transition: all var(--transition-fast);
+  font-weight: 400;
 }
+
 .year-item:hover, .month-item:hover, .day-item:hover {
   background: var(--accent-light);
 }
+
 .year-item.active, .month-item.active, .day-item.active {
   background: var(--accent-light);
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
 }
+
 .expand-icon {
   font-size: var(--text-xs);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast);
 }
+
 .expand-icon.expanded {
   transform: rotate(90deg);
 }
+
 .year-label, .month-label {
   flex: 1;
 }
+
 .year-count, .month-count, .day-count {
   color: var(--text-tertiary);
   font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
 }
+
 .months-list {
   padding-left: var(--space-md);
 }
+
 .days-list {
   padding-left: var(--space-md);
 }
+
 .timeline-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
 .content-header {
-  padding: var(--space-md) var(--space-lg) var(--space-sm);
+  padding: var(--space-xl) var(--space-lg) var(--space-md);
   display: flex;
   align-items: baseline;
-  gap: var(--space-md);
+  gap: var(--space-lg);
   flex-shrink: 0;
 }
-.content-header h2 {
+
+.content-title {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: var(--text-3xl);
+  font-weight: 200;
+  letter-spacing: -1px;
+  color: var(--text-primary);
 }
+
+.title-year {
+  font-weight: 300;
+}
+
+.title-sep {
+  margin: 0 4px;
+  color: var(--text-tertiary);
+  font-weight: 200;
+}
+
 .photo-total {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 </style>

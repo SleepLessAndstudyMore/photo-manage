@@ -419,7 +419,7 @@ function goToPhoto(id: number) {
   transition: all var(--transition-fast);
 }
 .face-item.selected {
-  border-color: var(--accent, #7EC8C8);
+  border-color: var(--accent);
   box-shadow: var(--card-shadow);
 }
 .face-item img {

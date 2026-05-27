@@ -2,13 +2,61 @@
   <div class="settings-page">
     <h2 class="page-title">设置</h2>
 
+    <!-- System Status — 大数字展示卡片 -->
+    <section class="settings-section status-section">
+      <h3 class="section-title">系统状态</h3>
+      <div v-if="sysStatus" class="status-cards">
+        <div class="status-card">
+          <span class="status-value">{{ sysStatus.total_photos }}</span>
+          <span class="status-label">照片总数</span>
+        </div>
+        <div class="status-card">
+          <span class="status-value">{{ sysStatus.total_libraries }}</span>
+          <span class="status-label">图库源</span>
+        </div>
+        <div class="status-card">
+          <span class="status-value">{{ sysStatus.db_size_mb.toFixed(1) }}<span class="status-unit">MB</span></span>
+          <span class="status-label">数据库</span>
+        </div>
+        <div class="status-card">
+          <span class="status-value">{{ sysStatus.thumbnail_size_mb.toFixed(1) }}<span class="status-unit">MB</span></span>
+          <span class="status-label">缩略图</span>
+        </div>
+      </div>
+
+      <div v-if="activeTasks.length > 0" class="tasks-area">
+        <h4 class="tasks-title">活跃任务</h4>
+        <div v-for="task in activeTasks" :key="task.id" class="task-item">
+          <div class="task-header">
+            <span class="task-type-badge" :class="task.status">{{ task.type }}</span>
+            <span class="task-msg">{{ task.message }}</span>
+            <button
+              v-if="task.status === 'running'"
+              class="pill-btn"
+              style="color: #FF3B30"
+              @click="onCancelTask(task.id)"
+            >
+              取消
+            </button>
+          </div>
+          <el-progress
+            :percentage="Math.round(task.progress * 100)"
+            :status="task.status === 'failed' ? 'exception' : undefined"
+          />
+        </div>
+      </div>
+    </section>
+
     <!-- Library Sources -->
     <section class="settings-section">
       <div class="section-header">
-        <h3>图库源管理</h3>
-        <el-button type="primary" :icon="Plus" size="small" @click="showAddDialog = true">
+        <h3 class="section-title">图库源管理</h3>
+        <button class="pill-btn pill-btn--primary" @click="showAddDialog = true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
           添加图库源
-        </el-button>
+        </button>
       </div>
       <el-table v-if="libraries.length > 0" :data="libraries" stripe style="width: 100%">
         <el-table-column prop="name" label="名称" min-width="120" />
@@ -53,58 +101,10 @@
       </div>
     </section>
 
-    <!-- System Status -->
-    <section class="settings-section">
-      <h3>系统状态</h3>
-      <div v-if="sysStatus" class="status-cards">
-        <div class="status-card">
-          <span class="status-value">{{ sysStatus.total_photos }}</span>
-          <span class="status-label">照片总数</span>
-        </div>
-        <div class="status-card">
-          <span class="status-value">{{ sysStatus.total_libraries }}</span>
-          <span class="status-label">图库源</span>
-        </div>
-        <div class="status-card">
-          <span class="status-value">{{ sysStatus.db_size_mb.toFixed(1) }} MB</span>
-          <span class="status-label">数据库</span>
-        </div>
-        <div class="status-card">
-          <span class="status-value">{{ sysStatus.thumbnail_size_mb.toFixed(1) }} MB</span>
-          <span class="status-label">缩略图</span>
-        </div>
-      </div>
-
-      <div v-if="activeTasks.length > 0" class="tasks-area">
-        <h4>活跃任务</h4>
-        <div v-for="task in activeTasks" :key="task.id" class="task-item">
-          <div class="task-header">
-            <el-tag :type="task.status === 'running' ? 'primary' : 'warning'" size="small">
-              {{ task.type }}
-            </el-tag>
-            <span class="task-msg">{{ task.message }}</span>
-            <el-button
-              v-if="task.status === 'running'"
-              size="small"
-              type="danger"
-              text
-              @click="onCancelTask(task.id)"
-            >
-              取消
-            </el-button>
-          </div>
-          <el-progress
-            :percentage="Math.round(task.progress * 100)"
-            :status="task.status === 'failed' ? 'exception' : undefined"
-          />
-        </div>
-      </div>
-    </section>
-
     <!-- 主题设置 -->
     <section class="settings-section">
       <div class="section-header">
-        <h3>主题设置</h3>
+        <h3 class="section-title">主题设置</h3>
       </div>
       <div class="theme-options">
         <div
@@ -131,7 +131,7 @@
 
     <!-- System Config -->
     <section class="settings-section">
-      <h3>系统配置</h3>
+      <h3 class="section-title">系统配置</h3>
       <el-form :model="configForm" label-width="140px" size="small" class="config-form">
         <el-form-item label="扫描间隔（秒）">
           <el-input-number v-model="configForm.scan_interval" :min="10" :max="3600" />
@@ -144,13 +144,13 @@
           <span class="switch-hint">{{ configForm.watchdog_enabled ? '已开启（实时监控文件变动）' : '已关闭' }}</span>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="saveConfig">保存配置</el-button>
+          <button type="button" class="pill-btn pill-btn--primary" @click="saveConfig">保存配置</button>
         </el-form-item>
       </el-form>
     </section>
 
     <!-- Add Library Dialog -->
-    <el-dialog v-model="showAddDialog" title="添加图库源" width="480px" @closed="resetForm">
+    <el-dialog v-model="showAddDialog" title="添加图库源" width="480px" class="glass-dialog" @closed="resetForm">
       <el-form :model="addForm" label-width="80px">
         <el-form-item label="名称" required>
           <el-input v-model="addForm.name" placeholder="例如：我的照片" />
@@ -160,8 +160,11 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" :loading="addingLibrary" @click="onAddLibrary">确认添加</el-button>
+        <button class="pill-btn" @click="showAddDialog = false">取消</button>
+        <button class="pill-btn pill-btn--primary" :disabled="addingLibrary" @click="onAddLibrary">
+          <span v-if="addingLibrary" class="spinner-sm" />
+          确认添加
+        </button>
       </template>
     </el-dialog>
   </div>
@@ -170,7 +173,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
 import { useLibraryStore } from '@/stores/library'
 import { useSystemStore } from '@/stores/system'
 import { cancelTask } from '@/api/system'
@@ -327,41 +329,144 @@ async function saveConfig() {
   overflow-y: auto;
   height: 100%;
 }
+
 .page-title {
-  margin: 0 0 var(--space-lg);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  margin: 0 0 var(--space-xl);
+  font-size: var(--text-3xl);
+  font-weight: 200;
+  letter-spacing: -1px;
 }
+
+/* ===== 设置区块 — 模块化玻璃卡片 ===== */
 .settings-section {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-xl);
   background: var(--card-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  border: 1px solid var(--border-color);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--card-shadow);
 }
-.settings-section h3 {
-  margin: 0 0 var(--space-md);
+
+.section-title {
+  margin: 0 0 var(--space-lg);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: -0.3px;
 }
-.settings-section h4 {
-  margin: var(--space-md) 0 var(--space-sm);
-  font-size: var(--text-sm);
-}
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
-.section-header h3 {
+
+.section-header .section-title {
   margin: 0;
 }
+
+.tasks-title {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 .empty-hint {
   padding: var(--space-xl) 0;
+}
+
+.spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+/* ===== 系统状态 — 大数字展示 ===== */
+.status-cards {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.status-card {
+  flex: 1;
+  min-width: 140px;
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="dark"] .status-card {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-value {
+  font-size: var(--text-3xl);
+  font-weight: 200;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.status-unit {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  margin-left: 2px;
+  opacity: 0.6;
+}
+
+.status-label {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.tasks-area {
+  margin-top: var(--space-md);
+}
+
+.task-item {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: 4px;
+}
+
+.task-type-badge {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.task-type-badge.warning {
+  background: rgba(255, 149, 0, 0.12);
+  color: #FF9500;
+}
+
+.task-msg {
+  flex: 1;
+  font-size: var(--text-sm);
 }
 
 /* ===== 主题选择 ===== */
@@ -369,6 +474,7 @@ async function saveConfig() {
   display: flex;
   gap: var(--space-md);
 }
+
 .theme-option {
   display: flex;
   flex-direction: column;
@@ -376,17 +482,21 @@ async function saveConfig() {
   gap: var(--space-sm);
   cursor: pointer;
   padding: var(--space-md);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   border: 2px solid transparent;
   transition: all var(--transition-fast);
 }
+
 .theme-option:hover {
   border-color: var(--border-color-hover);
 }
+
 .theme-option.is-active {
   border-color: var(--accent);
   background: var(--accent-light);
+  box-shadow: 0 0 20px var(--accent-glow);
 }
+
 .theme-preview {
   width: 120px;
   height: 80px;
@@ -394,26 +504,32 @@ async function saveConfig() {
   overflow: hidden;
   border: 1px solid var(--border-color);
 }
+
 .theme-preview--light {
-  background: #fff;
+  background: linear-gradient(135deg, #f5f7fb 0%, #eef2ff 100%);
 }
+
 .theme-preview--dark {
-  background: #1E1E1E;
+  background: linear-gradient(135deg, #111114 0%, #1a1a1e 100%);
 }
+
 .theme-preview--system {
-  background: linear-gradient(135deg, #fff 50%, #1E1E1E 50%);
+  background: linear-gradient(135deg, #f5f7fb 50%, #111114 50%);
 }
+
 .theme-preview-bar {
   height: 16px;
   background: var(--accent);
   opacity: 0.2;
 }
+
 .theme-preview-content {
   padding: 8px;
   display: flex;
   gap: 6px;
   align-items: flex-start;
 }
+
 .theme-preview-dot {
   width: 8px;
   height: 8px;
@@ -422,20 +538,24 @@ async function saveConfig() {
   flex-shrink: 0;
   margin-top: 3px;
 }
+
 .theme-preview-lines {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+
 .theme-preview-line {
   height: 4px;
   border-radius: 2px;
   background: var(--border-color);
 }
+
 .theme-preview-line.short {
   width: 60%;
 }
+
 .theme-option-label {
   font-size: var(--text-sm);
   font-weight: 500;
@@ -448,70 +568,48 @@ async function saveConfig() {
   flex-direction: column;
   gap: var(--space-md);
 }
+
 .progress-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+
 .progress-label {
   font-size: var(--text-sm);
   font-weight: 500;
 }
+
 .progress-msg {
   font-size: var(--text-xs);
   color: var(--text-secondary);
 }
-.status-cards {
-  display: flex;
-  gap: var(--space-md);
-  flex-wrap: wrap;
-}
-.status-card {
-  flex: 1;
-  min-width: 160px;
-  padding: var(--space-md);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: var(--bg-secondary);
-}
-.status-value {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-.status-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-.tasks-area {
-  margin-top: var(--space-md);
-}
-.task-item {
-  padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--border-color);
-}
-.task-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: 4px;
-}
-.task-msg {
-  flex: 1;
-  font-size: var(--text-sm);
-}
+
 .config-form {
   max-width: 500px;
   margin-top: var(--space-sm);
 }
+
 .switch-hint {
   margin-left: var(--space-sm);
   font-size: var(--text-xs);
   color: var(--text-secondary);
+}
+
+:deep(.glass-dialog .el-dialog) {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+}
+
+[data-theme="dark"] :deep(.glass-dialog .el-dialog) {
+  background: rgba(30, 30, 34, 0.8);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

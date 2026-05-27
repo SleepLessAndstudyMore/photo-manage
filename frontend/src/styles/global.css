@@ -8,6 +8,7 @@
 
 html, body {
   height: 100%;
+  overflow: hidden;
 }
 
 #app {
@@ -16,12 +17,16 @@ html, body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
+  background: linear-gradient(135deg, #f5f7fb 0%, #eef2ff 35%, #f8faff 100%);
   position: relative;
-  transition: background-color var(--transition-normal), color var(--transition-normal);
+  transition: background var(--transition-slow), color var(--transition-normal);
 }
 
-/* ===== 多层背景系统：在 #app 内容背后渲染以供 backdrop-filter 模糊 ===== */
+[data-theme="dark"] #app {
+  background: linear-gradient(135deg, #111114 0%, #161618 35%, #131316 100%);
+}
+
+/* ===== 多层背景系统 ===== */
 #app::before {
   content: '';
   position: absolute;
@@ -34,7 +39,7 @@ html, body {
   background-size: var(--bg-dots-size), cover;
 }
 
-/* === 滚动条 — 全局隐藏，Hover 显现 === */
+/* === 滚动条 === */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
 }
@@ -67,6 +72,11 @@ button {
   color: var(--text-secondary);
 }
 
+/* 数字使用等宽数字 */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 /* 胶囊按钮基类 */
 .pill-btn {
   display: inline-flex;
@@ -80,7 +90,7 @@ button {
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .pill-btn:hover {
@@ -94,4 +104,5 @@ button {
 
 .pill-btn--primary:hover {
   background: var(--accent-hover);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.25);
 }
