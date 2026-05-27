@@ -69,22 +69,25 @@
           </template>
         </el-table-column>
         <el-table-column prop="photo_count" label="照片数" width="80" />
-        <el-table-column prop="last_scan_at" label="上次扫描" width="160">
+        <el-table-column prop="last_scan_at" label="上次扫描" width="180">
           <template #default="{ row }">
             {{ row.last_scan_at ? new Date(row.last_scan_at).toLocaleString('zh-CN') : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" min-width="200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" :loading="row.scan_status === 'scanning'" @click="onScan(row.id)">
-              扫描
-            </el-button>
-            <el-button size="small" @click="onCheckConsistency(row.id)">校验</el-button>
-            <el-popconfirm title="确定删除此图库源？照片索引也会被删除。" @confirm="onDelete(row.id)">
-              <template #reference>
-                <el-button size="small" type="danger" text>删除</el-button>
-              </template>
-            </el-popconfirm>
+            <div class="op-btns">
+              <button class="pill-btn pill-btn--sm" :disabled="row.scan_status === 'scanning'" @click="onScan(row.id)">
+                <span v-if="row.scan_status === 'scanning'" class="spinner-sm" />
+                扫描
+              </button>
+              <button class="pill-btn pill-btn--sm" @click="onCheckConsistency(row.id)">校验</button>
+              <el-popconfirm title="确定删除此图库源？照片索引也会被删除。" @confirm="onDelete(row.id)">
+                <template #reference>
+                  <button class="pill-btn pill-btn--sm pill-btn--danger">删除</button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -583,6 +586,39 @@ async function saveConfig() {
 .progress-msg {
   font-size: var(--text-xs);
   color: var(--text-secondary);
+}
+
+/* ===== 操作按钮 ===== */
+.op-btns {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pill-btn--sm {
+  padding: 4px 12px;
+  font-size: var(--text-xs);
+  border-radius: 6px;
+}
+
+.pill-btn--danger {
+  color: #FF3B30;
+}
+
+.pill-btn--danger:hover {
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+}
+
+.spinner-sm {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  margin-right: 4px;
 }
 
 .config-form {
