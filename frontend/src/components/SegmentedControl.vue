@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, computed } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 
 interface Option {
   label: string
@@ -37,12 +37,11 @@ const sliderStyle = ref({})
 
 function updateSlider() {
   const idx = props.options.findIndex(o => o.value === props.modelValue)
-  if (idx < 0 || !btnRefs.value[idx] || !containerRef.value) return
+  if (idx < 0 || !btnRefs.value[idx]) return
   const btn = btnRefs.value[idx]
-  const container = containerRef.value
   sliderStyle.value = {
     width: `${btn.offsetWidth}px`,
-    transform: `translateX(${btn.offsetLeft - container.offsetLeft}px)`,
+    left: `${btn.offsetLeft}px`,
   }
 }
 
@@ -66,12 +65,11 @@ onMounted(() => nextTick(updateSlider))
 .segmented-slider {
   position: absolute;
   top: 2px;
-  left: 2px;
   height: calc(100% - 4px);
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s var(--ease-apple), width 0.25s var(--ease-apple);
+  transition: left 0.25s var(--ease-apple), width 0.25s var(--ease-apple);
   z-index: 0;
 }
 

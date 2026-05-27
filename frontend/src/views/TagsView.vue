@@ -1,7 +1,6 @@
 <template>
   <div class="view-tags">
     <div class="tags-header">
-      <h2 class="tags-title">标签云</h2>
       <div class="tags-header-actions">
         <SegmentedControl
           v-model="tagType"
@@ -201,13 +200,6 @@ async function handleCreateTag() {
   align-items: center;
   margin-bottom: var(--space-xl);
   flex-shrink: 0;
-}
-
-.tags-title {
-  margin: 0;
-  font-size: var(--text-3xl);
-  font-weight: 200;
-  letter-spacing: -1px;
 }
 
 .tags-header-actions {

@@ -1,7 +1,6 @@
 <template>
   <div class="view-duplicates">
     <div class="dup-header">
-      <h2 class="dup-title">重复照片清理</h2>
       <div class="dup-actions">
         <SegmentedControl
           v-model="dupType"
@@ -195,13 +194,6 @@ function formatSize(bytes: number) {
   align-items: center;
   margin-bottom: var(--space-lg);
   flex-shrink: 0;
-}
-
-.dup-title {
-  margin: 0;
-  font-size: var(--text-3xl);
-  font-weight: 200;
-  letter-spacing: -1px;
 }
 
 .dup-actions {
