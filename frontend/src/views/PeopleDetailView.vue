@@ -123,7 +123,6 @@
               <div v-else class="photo-placeholder">
                 <el-icon><PictureFilled /></el-icon>
               </div>
-              <div class="photo-name">{{ photo.file_name }}</div>
             </div>
           </div>
           <div v-if="photosHasMore" class="load-more">
@@ -386,13 +385,6 @@ function goToPhoto(id: number) {
   align-items: center;
   justify-content: center;
   color: #ccc;
-}
-.photo-name {
-  padding: 6px 8px;
-  font-size: var(--text-sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .load-more {
   text-align: center;

@@ -40,10 +40,6 @@
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
-            <!-- Hover 玻璃信息层 -->
-            <div class="photo-card-overlay">
-              <span class="overlay-name">{{ photo.file_name }}</span>
-            </div>
             <!-- 边缘高光 -->
             <div class="photo-card-highlight" />
             <div v-if="photo.is_video" class="video-overlay">
@@ -200,37 +196,6 @@ function formatDuration(seconds: number): string {
 
 .photo-card:hover .thumbnail-img {
   transform: scale(1.05);
-}
-
-/* Hover 玻璃信息层 */
-.photo-card-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--space-lg) var(--space-md) var(--space-md);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
-  backdrop-filter: blur(8px);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 220ms var(--ease-apple);
-  pointer-events: none;
-}
-
-.photo-card:hover .photo-card-overlay {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.overlay-name {
-  color: #fff;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
 }
 
 /* 边缘高光效果 */
