@@ -135,21 +135,31 @@
     <!-- System Config -->
     <section class="settings-section">
       <h3 class="section-title">系统配置</h3>
-      <el-form :model="configForm" label-width="140px" size="small" class="config-form">
-        <el-form-item label="扫描间隔（秒）">
-          <el-input-number v-model="configForm.scan_interval" :min="10" :max="3600" />
-        </el-form-item>
-        <el-form-item label="缩略图质量">
-          <el-slider v-model="configForm.thumbnail_quality" :min="10" :max="100" show-input style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="文件监控">
-          <el-switch v-model="configForm.watchdog_enabled" />
-          <span class="switch-hint">{{ configForm.watchdog_enabled ? '已开启（实时监控文件变动）' : '已关闭' }}</span>
-        </el-form-item>
-        <el-form-item>
-          <button type="button" class="pill-btn pill-btn--primary" @click="saveConfig">保存配置</button>
-        </el-form-item>
-      </el-form>
+      <div class="config-grid">
+        <div class="config-item">
+          <div class="config-label">扫描间隔（秒）</div>
+          <div class="config-control">
+            <el-input-number v-model="configForm.scan_interval" :min="10" :max="3600" size="default" />
+          </div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">缩略图质量</div>
+          <div class="config-control">
+            <el-slider v-model="configForm.thumbnail_quality" :min="10" :max="100" style="width: 220px" />
+            <span class="config-value">{{ configForm.thumbnail_quality }}%</span>
+          </div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">文件监控</div>
+          <div class="config-control">
+            <el-switch v-model="configForm.watchdog_enabled" />
+            <span class="switch-hint">{{ configForm.watchdog_enabled ? '已开启（实时监控文件变动）' : '已关闭' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="config-actions">
+        <button type="button" class="pill-btn pill-btn--primary" @click="saveConfig">保存配置</button>
+      </div>
     </section>
 
     <!-- Add Library Dialog -->
@@ -621,9 +631,45 @@ async function saveConfig() {
   margin-right: 4px;
 }
 
-.config-form {
-  max-width: 500px;
-  margin-top: var(--space-sm);
+.config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 480px;
+}
+
+.config-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+.config-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.config-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+}
+
+.config-value {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  min-width: 36px;
+  font-variant-numeric: tabular-nums;
+}
+
+.config-actions {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-color);
 }
 
 .switch-hint {
