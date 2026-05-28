@@ -12,6 +12,7 @@ from backend.models.photo_tag import PhotoTag
 from backend.models.photo_album import PhotoAlbum
 from backend.models.photo_face import PhotoFace
 from backend.models.photo_embedding import PhotoEmbedding
+from backend.models.face_cluster import FaceCluster
 from backend.schemas.library import (
     LibraryCreate, LibraryResponse, LibraryListResponse, ScanTriggerResponse,
 )
@@ -110,6 +111,20 @@ async def delete_library(
         session.delete(photo)
 
     session.delete(library)
+
+    # Clean up orphaned FaceClusters (no remaining faces after photo deletion)
+    orphan_clusters = session.exec(
+        select(FaceCluster).where(
+            ~FaceCluster.id.in_(
+                select(PhotoFace.face_cluster_id).where(
+                    PhotoFace.face_cluster_id.is_not(None)
+                ).distinct()
+            )
+        )
+    ).all()
+    for cluster in orphan_clusters:
+        session.delete(cluster)
+
     session.commit()
     return None
 
