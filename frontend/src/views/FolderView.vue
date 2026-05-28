@@ -1,13 +1,16 @@
 <template>
   <div class="folder-page">
-    <div class="folder-toolbar">
-      <SegmentedControl
+    <div class="page-header">
+      <h2 class="page-title">文件夹</h2>
+      <div class="header-actions">
+        <SegmentedControl
         v-model="viewMode"
         :options="[
           { label: '文件夹视图', value: 'folders' },
           { label: '聚合视图', value: 'aggregate' },
         ]"
       />
+      </div>
     </div>
 
     <div v-if="viewMode === 'folders'" class="folders-grid">
@@ -129,6 +132,27 @@ function formatDate(dateStr: string | null) {
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: var(--space-6);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  flex-shrink: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--text-h1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
 .folder-toolbar {
@@ -155,19 +179,20 @@ function formatDate(dateStr: string | null) {
 
 /* ===== 文件夹卡片 ===== */
 .folder-card {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-  box-shadow: var(--shadow-xs);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
 }
 
 .folder-card:hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--accent);
 }
 
 .folder-cover {

@@ -248,7 +248,7 @@ function formatSize(bytes: number) {
   padding: var(--space-4);
   box-shadow: var(--shadow-xs);
   transition: box-shadow var(--transition-fast);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
 }
 
 .dup-card:hover {
@@ -302,13 +302,14 @@ function formatSize(bytes: number) {
 
 .dup-photo-item {
   cursor: pointer;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   width: 150px;
   flex-shrink: 0;
   background: var(--gray-100);
   border: 2px solid transparent;
-  transition: all var(--transition-fast);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .dup-photo-item.selected {
@@ -317,8 +318,8 @@ function formatSize(bytes: number) {
 }
 
 .dup-photo-item:hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.03);
 }
 
 .dup-photo-item img {

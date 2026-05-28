@@ -1,12 +1,5 @@
 <template>
   <div class="photo-detail-page">
-    <!-- 沉浸式模糊背景 -->
-    <div
-      v-if="photo?.preview_path"
-      class="photo-detail-backdrop"
-      :style="{ backgroundImage: `url(/thumbnails/${photo.preview_path || photo.thumbnail_path})` }"
-    />
-
     <!-- 顶部工具栏 -->
     <div class="detail-toolbar">
       <button class="pill-btn" @click="goBack">
@@ -160,23 +153,7 @@ async function onFavoriteUpdate(photoId: number, isFavorite: boolean) {
   flex-direction: column;
   height: 100%;
   position: relative;
-  background: transparent;
-}
-
-/* ===== 沉浸式模糊背景 ===== */
-.photo-detail-backdrop {
-  position: fixed;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(80px) brightness(0.6);
-  transform: scale(1.2);
-  z-index: -1;
-  transition: background-image var(--transition-normal);
-}
-
-[data-theme="dark"] .photo-detail-backdrop {
-  filter: blur(80px) brightness(0.35);
+  background: var(--bg-primary);
 }
 
 /* ===== 顶部工具栏 ===== */

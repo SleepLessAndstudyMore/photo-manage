@@ -1,14 +1,16 @@
 <template>
   <div class="view-search">
-    <!-- 顶部工具栏 -->
     <div class="search-toolbar">
-      <SegmentedControl
-        v-model="searchMode"
-        :options="[
-          { label: '结构化搜索', value: 'structured' },
-          { label: '自然语言', value: 'hybrid' },
-        ]"
-      />
+      <div class="toolbar-top">
+        <h2 class="page-title">搜索</h2>
+        <SegmentedControl
+          v-model="searchMode"
+          :options="[
+            { label: '结构化搜索', value: 'structured' },
+            { label: '自然语言', value: 'hybrid' },
+          ]"
+        />
+      </div>
 
       <!-- Hybrid search bar -->
       <div v-if="searchMode === 'hybrid'" class="hybrid-toolbar">
@@ -141,14 +143,10 @@
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
-            <div class="result-info">
-              <span class="result-name">{{ photo.file_name }}</span>
-              <div class="result-meta">
-                <span v-if="photo.date_taken" class="result-date">{{ formatDate(photo.date_taken) }}</span>
-                <span v-if="searchMode === 'hybrid' && photo.similarity_score != null" class="result-score">
-                  {{ (photo.similarity_score * 100).toFixed(0) }}%
-                </span>
-              </div>
+            <div v-if="searchMode === 'hybrid' && photo.similarity_score != null" class="result-info">
+              <span class="result-score">
+                {{ (photo.similarity_score * 100).toFixed(0) }}%
+              </span>
             </div>
           </div>
         </div>
@@ -328,15 +326,28 @@ function formatDate(dateStr: string) {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* ===== 顶部工具栏 ===== */
 .search-toolbar {
   flex-shrink: 0;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-6);
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-card);
+}
+
+.toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--text-h1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
 }
 
 /* ===== Hybrid 搜索 ===== */
@@ -539,7 +550,6 @@ function formatDate(dateStr: string) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   padding: var(--space-4) var(--space-6);
 }
 
@@ -577,18 +587,18 @@ function formatDate(dateStr: string) {
 
 /* ===== 结果卡片 ===== */
 .result-card {
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--bg-card);
-  box-shadow: var(--shadow-xs);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
 }
 
 .result-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .result-card img {
@@ -609,29 +619,10 @@ function formatDate(dateStr: string) {
 }
 
 .result-info {
-  padding: var(--space-2) var(--space-3);
-}
-
-.result-name {
-  display: block;
-  font-size: var(--text-caption);
-  font-weight: var(--font-weight-medium);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.result-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-top: 2px;
-}
-
-.result-date {
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
+  padding: var(--space-1) var(--space-3);
+  position: absolute;
+  bottom: var(--space-2);
+  right: var(--space-2);
 }
 
 .result-score {

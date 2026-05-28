@@ -399,16 +399,17 @@ async function onClusterFaces() {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
   position: relative;
   user-select: none;
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .cluster-card:hover {
   border-color: var(--accent);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px) scale(1.02);
 }
 
 .cluster-card.is-selected {

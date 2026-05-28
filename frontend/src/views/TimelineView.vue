@@ -1,64 +1,86 @@
 <template>
   <div class="timeline-page">
-    <aside class="timeline-sidebar">
-      <h3 class="sidebar-title">时间轴</h3>
-      <div v-if="!timeline" class="sidebar-loading">
-        <el-skeleton :rows="5" animated />
-      </div>
-      <div v-else-if="timeline.years.length === 0" class="sidebar-empty">
-        暂无照片
-      </div>
-      <div v-else class="timeline-tree">
-        <div v-for="y in timeline.years" :key="y.year" class="year-group">
-          <div
-            class="year-item"
-            :class="{ active: selectedYear === y.year && !selectedMonth }"
-            @click="toggleYear(y.year)"
-          >
-            <el-icon class="expand-icon" :class="{ expanded: expandedYears.has(y.year) }">
-              <ArrowRight />
-            </el-icon>
-            <span class="year-label">{{ y.year }}</span>
-            <span class="year-count">{{ y.count }}</span>
-          </div>
-          <div v-if="expandedYears.has(y.year)" class="months-list">
-            <div v-for="m in y.months" :key="m.month" class="month-group">
-              <div
-                class="month-item"
-                :class="{ active: selectedYear === y.year && selectedMonth === m.month && !selectedDay }"
-                @click="toggleMonth(y.year, m.month)"
-              >
-                <span class="month-label">{{ m.month }} 月</span>
-                <span class="month-count">{{ m.count }}</span>
-              </div>
-              <div v-if="expandedMonths.has(`${y.year}-${m.month}`)" class="days-list">
-                <div
-                  v-for="d in m.days"
-                  :key="d.day"
-                  class="day-item"
-                  :class="{ active: selectedYear === y.year && selectedMonth === m.month && selectedDay === d.day }"
-                  @click="selectDay(y.year, m.month, d.day)"
-                >
-                  <span>{{ d.day }} 日</span>
-                  <span class="day-count">{{ d.count }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
     <main class="timeline-content">
       <div class="content-header">
-        <h2 class="content-title" v-if="selectedYear">
-          <span class="title-year">{{ selectedYear }}</span>
-          <template v-if="selectedMonth"><span class="title-sep">/</span>{{ selectedMonth }}</template>
-          <template v-if="selectedDay"><span class="title-sep">/</span>{{ selectedDay }}</template>
-        </h2>
-        <h2 class="content-title" v-else>
-          <span class="title-year">全部照片</span>
-        </h2>
-        <span class="photo-total">{{ total }} 张照片</span>
+        <div class="header-left">
+          <h2 class="content-title" v-if="selectedYear">
+            <span class="title-year">{{ selectedYear }}</span>
+            <template v-if="selectedMonth"><span class="title-sep">/</span>{{ selectedMonth }}</template>
+            <template v-if="selectedDay"><span class="title-sep">/</span>{{ selectedDay }}</template>
+          </h2>
+          <h2 class="content-title" v-else>
+            <span class="title-year">全部照片</span>
+          </h2>
+          <span class="photo-total">{{ total }} 张照片</span>
+        </div>
+        <div class="header-right">
+          <el-dropdown trigger="click" @command="onTimeFilterCommand">
+            <button class="time-filter-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ selectedYear ? `${selectedYear}/${selectedMonth || ''}` : '全部时间' }}
+              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu class="time-tree-dropdown">
+                <div v-if="!timeline" class="tree-loading">
+                  <el-skeleton :rows="3" animated />
+                </div>
+                <div v-else-if="timeline.years.length === 0" class="tree-empty">
+                  暂无照片
+                </div>
+                <div v-else class="timeline-tree">
+                  <div
+                    class="tree-item"
+                    :class="{ active: !selectedYear }"
+                    @click="clearTimeFilter"
+                  >
+                    全部时间
+                  </div>
+                  <div v-for="y in timeline.years" :key="y.year" class="year-group">
+                    <div
+                      class="tree-item year-item"
+                      :class="{ active: selectedYear === y.year && !selectedMonth }"
+                      @click="toggleYear(y.year)"
+                    >
+                      <el-icon class="expand-icon" :class="{ expanded: expandedYears.has(y.year) }">
+                        <ArrowRight />
+                      </el-icon>
+                      <span class="item-label">{{ y.year }}</span>
+                      <span class="item-count">{{ y.count }}</span>
+                    </div>
+                    <div v-if="expandedYears.has(y.year) && y.months" class="months-list">
+                      <template v-for="m in y.months" :key="m?.month">
+                        <div
+                          v-if="m"
+                          class="tree-item month-item"
+                          :class="{ active: selectedYear === y.year && selectedMonth === m.month && !selectedDay }"
+                          @click="selectMonth(y.year, m.month)"
+                        >
+                          <span class="item-label">{{ m.month }} 月</span>
+                          <span class="item-count">{{ m.count }}</span>
+                        </div>
+                        <div v-if="m && expandedMonths.has(`${y.year}-${m.month}`)" class="days-list">
+                          <div
+                            v-for="d in m.days"
+                            :key="d.day"
+                            class="tree-item day-item"
+                            :class="{ active: selectedYear === y.year && selectedMonth === m.month && selectedDay === d.day }"
+                            @click="selectDay(y.year, m.month, d.day)"
+                          >
+                            <span>{{ d.day }} 日</span>
+                            <span class="item-count">{{ d.count }}</span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </div>
       <PhotoGrid
         :photos="photos"
@@ -74,7 +96,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight, ArrowDown } from '@element-plus/icons-vue'
 import { usePhotoStore } from '@/stores/photo'
 import type { Photo } from '@/types/photo'
 import PhotoGrid from '@/components/PhotoGrid.vue'
@@ -106,13 +128,11 @@ function toggleYear(year: number) {
   }
 }
 
-function toggleMonth(year: number, month: number) {
-  const key = `${year}-${month}`
-  if (expandedMonths.value.has(key)) {
-    expandedMonths.value.delete(key)
-  } else {
-    expandedMonths.value.add(key)
-  }
+async function selectMonth(year: number, month: number) {
+  selectedYear.value = year
+  selectedMonth.value = month
+  selectedDay.value = null
+  await photoStore.fetchPhotos({ year, month, page: 1, page_size: 50 })
 }
 
 async function selectDay(year: number, month: number, day: number) {
@@ -120,6 +140,17 @@ async function selectDay(year: number, month: number, day: number) {
   selectedMonth.value = month
   selectedDay.value = day
   await photoStore.fetchPhotos({ year, month, day, page: 1, page_size: 50 })
+}
+
+async function clearTimeFilter() {
+  selectedYear.value = null
+  selectedMonth.value = null
+  selectedDay.value = null
+  await photoStore.fetchPhotos({ page: 1, page_size: 50 })
+}
+
+function onTimeFilterCommand(command: string) {
+  // 处理下拉菜单命令
 }
 
 function onPhotoClick(photo: Photo) {
@@ -133,85 +164,9 @@ async function onLoadMore() {
 
 <style scoped>
 .timeline-page {
-  display: flex;
   height: 100%;
-}
-
-.timeline-sidebar {
-  width: 240px;
-  min-width: 240px;
-  overflow-y: auto;
-  padding: var(--space-4) var(--space-3);
-  background: var(--bg-card);
-  border-right: 1px solid var(--border-color);
-}
-
-.sidebar-title {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-overline);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-placeholder);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
-}
-
-.sidebar-loading, .sidebar-empty {
-  padding: var(--space-4) 0;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--text-caption);
-}
-
-.timeline-tree {
-  font-size: var(--text-body);
-}
-
-.year-item, .month-item, .day-item {
   display: flex;
-  align-items: center;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  gap: var(--space-2);
-  transition: all var(--transition-fast);
-  font-weight: var(--font-weight-regular);
-}
-
-.year-item:hover, .month-item:hover, .day-item:hover {
-  background: var(--gray-50);
-}
-
-.year-item.active, .month-item.active, .day-item.active {
-  background: var(--accent-light);
-  color: var(--accent);
-  font-weight: var(--font-weight-medium);
-}
-
-.expand-icon {
-  font-size: var(--text-caption);
-  transition: transform var(--transition-fast);
-}
-
-.expand-icon.expanded {
-  transform: rotate(90deg);
-}
-
-.year-label, .month-label {
-  flex: 1;
-}
-
-.year-count, .month-count, .day-count {
-  color: var(--text-tertiary);
-  font-size: var(--text-caption);
-  font-variant-numeric: tabular-nums;
-}
-
-.months-list {
-  padding-left: var(--space-4);
-}
-
-.days-list {
-  padding-left: var(--space-4);
+  flex-direction: column;
 }
 
 .timeline-content {
@@ -224,9 +179,21 @@ async function onLoadMore() {
 .content-header {
   padding: var(--space-6) var(--space-6) var(--space-4);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
   align-items: baseline;
   gap: var(--space-4);
-  flex-shrink: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .content-title {
@@ -251,5 +218,91 @@ async function onLoadMore() {
   color: var(--text-tertiary);
   font-size: var(--text-caption);
   font-variant-numeric: tabular-nums;
+}
+
+/* 时间筛选按钮 */
+.time-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.time-filter-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+/* 下拉菜单中的时间树 */
+:deep(.time-tree-dropdown) {
+  max-height: 400px;
+  overflow-y: auto;
+  min-width: 200px;
+}
+
+.tree-loading, .tree-empty {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+.timeline-tree {
+  padding: var(--space-2);
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  gap: var(--space-2);
+  transition: all var(--transition-fast);
+  font-weight: var(--font-weight-regular);
+}
+
+.tree-item:hover {
+  background: var(--gray-50);
+}
+
+.tree-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.expand-icon {
+  font-size: var(--text-caption);
+  transition: transform var(--transition-fast);
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.item-label {
+  flex: 1;
+}
+
+.item-count {
+  color: var(--text-tertiary);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.months-list {
+  padding-left: var(--space-4);
+}
+
+.days-list {
+  padding-left: var(--space-4);
 }
 </style>

@@ -40,19 +40,6 @@
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
-            <!-- 信息叠加层 -->
-            <div class="photo-info-overlay">
-              <div class="photo-info-left">
-                <span v-if="photo.date_taken" class="photo-date">{{ formatDate(photo.date_taken) }}</span>
-              </div>
-              <div class="photo-info-right">
-                <span v-if="photo.is_video" class="video-badge">
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                </span>
-              </div>
-            </div>
             <div v-if="photo.file_missing" class="missing-overlay">
               <span>文件丢失</span>
             </div>
@@ -153,7 +140,6 @@ function formatDate(dateStr: string) {
 <style scoped>
 .photo-grid-container {
   height: 100%;
-  overflow: hidden;
   position: relative;
 }
 
@@ -171,27 +157,28 @@ function formatDate(dateStr: string) {
 
 /* ===== 照片卡片 ===== */
 .photo-card {
-  border-radius: var(--radius-xs);
-  overflow: hidden;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   position: relative;
   aspect-ratio: 1;
-  animation: stagger-in 0.4s var(--transition-normal) both;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .photo-card:hover {
-  transform: scale(1.02);
-  box-shadow: var(--shadow-sm);
-  z-index: 1;
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .photo-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  border-radius: var(--radius-xs);
 }
 
 .thumbnail-img {
@@ -211,41 +198,6 @@ function formatDate(dateStr: string) {
   background: var(--gray-100);
 }
 
-/* ===== 信息叠加层 ===== */
-.photo-info-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--space-2) var(--space-2) var(--space-1);
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.4));
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.photo-card:hover .photo-info-overlay {
-  opacity: 1;
-}
-
-.photo-date {
-  font-size: var(--text-caption);
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-
-.video-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-}
 
 .missing-overlay {
   position: absolute;

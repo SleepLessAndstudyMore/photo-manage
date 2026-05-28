@@ -178,18 +178,18 @@ async function handleCreate() {
 /* ===== 相册卡片 ===== */
 .album-card {
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
 }
 
 .album-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .album-cover {

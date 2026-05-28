@@ -370,8 +370,8 @@ function goToPhoto(id: number) {
   transition: all var(--transition-fast);
 }
 .photo-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .photo-item img {
   width: 100%;

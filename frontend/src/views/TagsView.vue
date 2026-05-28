@@ -266,7 +266,7 @@ async function handleCreateTag() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
   flex-shrink: 0;
 }
 
@@ -371,19 +371,20 @@ async function handleCreateTag() {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, background 0.3s ease;
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .tag-card:hover {
   border-color: var(--accent);
   background: var(--accent-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tag-card-icon {
@@ -461,7 +462,7 @@ async function handleCreateTag() {
   aspect-ratio: 1;
   background: var(--gray-100);
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-  animation: stagger-in 0.4s var(--transition-normal) both;
+  animation: stagger-in 0.4s var(--transition-normal) backwards;
 }
 
 .tag-photo-item:hover {
