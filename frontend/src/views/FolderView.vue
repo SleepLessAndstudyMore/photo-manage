@@ -31,21 +31,37 @@
           :style="{ animationDelay: `${Math.min(index * 40, 400)}ms` }"
           @click="enterFolder(folder.path)"
         >
-          <div class="folder-cover">
-            <img
-              v-if="folder.cover_photo?.thumbnail_path"
-              :src="`/thumbnails/${folder.cover_photo.thumbnail_path}`"
-              loading="lazy"
-            />
+          <!-- 拼贴封面 -->
+          <div class="folder-cover"
+               :class="{ 'has-photos': folder.preview_photos && folder.preview_photos.length > 0 }"
+          >
+            <!-- 有照片时显示2x2拼贴 -->
+            <template v-if="folder.preview_photos && folder.preview_photos.length > 0">
+              <div class="collage-grid">
+                <div
+                  v-for="(p, i) in folder.preview_photos.slice(0, 4)"
+                  :key="i"
+                  class="collage-item"
+                >
+                  <img
+                    v-if="p.thumbnail_path"
+                    :src="`/thumbnails/${p.thumbnail_path}`"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </template>
+            <!-- 无照片时显示品牌渐变占位 -->
             <div v-else class="folder-cover-empty">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
               </svg>
             </div>
-          </div>
-          <div class="folder-info">
-            <span class="folder-name">{{ folder.name }}</span>
-            <span class="folder-meta">{{ folder.photo_count }} 张照片 · {{ formatDate(folder.modified_at) }}</span>
+            <!-- 底部渐变遮罩 + 文字 -->
+            <div class="folder-cover-overlay">
+              <span class="folder-name-overlay">{{ folder.name }}</span>
+              <span class="folder-count-overlay">{{ folder.photo_count }} 张</span>
+            </div>
           </div>
         </div>
       </div>
@@ -183,64 +199,100 @@ function formatDate(dateStr: string | null) {
 
 /* ===== 文件夹卡片 ===== */
 .folder-card {
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 200ms var(--ease-standard), box-shadow 200ms var(--ease-standard);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  animation: stagger-in 0.35s var(--ease-standard) backwards;
+  position: relative;
 }
 
 .folder-card:hover {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
   border-color: var(--accent);
 }
 
+/* ===== 拼贴封面 ===== */
 .folder-cover {
-  height: 140px;
-  background: var(--gray-100);
+  height: 160px;
+  background: var(--brand-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
-.folder-cover img {
+.folder-cover.has-photos {
+  background: var(--gray-100);
+}
+
+.collage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+}
+
+.collage-item {
+  overflow: hidden;
+  background: var(--gray-200);
+}
+
+.collage-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform 300ms var(--ease-standard);
 }
 
-.folder-card:hover .folder-cover img {
+.folder-card:hover .collage-item img {
   transform: scale(1.05);
 }
 
+/* 无照片时的占位 */
 .folder-cover-empty {
-  color: var(--text-placeholder);
-  opacity: 0.3;
+  color: white;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.folder-info {
-  padding: var(--space-3) var(--space-4);
+/* 底部渐变遮罩 + 文字 */
+.folder-cover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 12px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.folder-name {
-  display: block;
-  font-size: var(--text-body);
-  font-weight: var(--font-weight-medium);
+.folder-name-overlay {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-.folder-meta {
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
+.folder-count-overlay {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .aggregate-content {

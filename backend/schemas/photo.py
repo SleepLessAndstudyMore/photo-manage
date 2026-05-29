@@ -124,6 +124,7 @@ class FolderItem(BaseModel):
     name: str
     photo_count: int
     cover_photo: PhotoResponse | None = None
+    preview_photos: list[PhotoResponse] = []
 
 
 class FolderListResponse(BaseModel):

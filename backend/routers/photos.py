@@ -144,8 +144,11 @@ async def list_folders(
                 "name": os.path.basename(folder),
                 "photo_count": 0,
                 "cover_photo": p,
+                "preview_photos": [],
             }
         folder_map[folder]["photo_count"] += 1
+        if len(folder_map[folder]["preview_photos"]) < 4:
+            folder_map[folder]["preview_photos"].append(p)
 
     items = []
     for fdata in sorted(folder_map.values(), key=lambda x: x["path"]):
@@ -154,6 +157,7 @@ async def list_folders(
             name=fdata["name"],
             photo_count=fdata["photo_count"],
             cover_photo=PhotoResponse.model_validate(fdata["cover_photo"]),
+            preview_photos=[PhotoResponse.model_validate(p) for p in fdata["preview_photos"]],
         ))
 
     return FolderListResponse(items=items)

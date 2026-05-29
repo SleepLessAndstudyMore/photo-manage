@@ -34,7 +34,7 @@
     </div>
 
     <div class="detail-body">
-      <!-- 照片预览区 -->
+      <!-- 左侧：照片大图预览（60%） -->
       <div class="detail-preview" @click="showLightbox = true">
         <img
           v-if="photo?.preview_path"
@@ -59,7 +59,7 @@
         </div>
       </div>
 
-      <!-- 右侧 EXIF 抽屉面板 -->
+      <!-- 右侧：信息面板（40%） -->
       <aside class="drawer-panel">
         <ExifPanel
           :exif="photoExif"
@@ -160,28 +160,30 @@ async function onFavoriteUpdate(photoId: number, isFavorite: boolean) {
 .detail-toolbar {
   display: flex;
   align-items: center;
-  padding: var(--space-sm) var(--space-md);
-  gap: var(--space-md);
+  padding: var(--space-3) var(--space-6);
+  gap: var(--space-4);
   flex-shrink: 0;
   background: var(--card-bg);
   backdrop-filter: var(--card-blur);
   -webkit-backdrop-filter: var(--card-blur);
   border-bottom: 1px solid var(--border-color);
+  height: 56px;
 }
 
 .detail-filename {
   flex: 1;
-  font-size: var(--text-base);
+  font-size: var(--text-body);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .detail-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-3);
 }
 
 /* ===== 主体 ===== */
@@ -191,22 +193,24 @@ async function onFavoriteUpdate(photoId: number, isFavorite: boolean) {
   overflow: hidden;
 }
 
+/* 左侧照片预览（60%） */
 .detail-preview {
-  flex: 1;
+  flex: 3;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  padding: var(--space-md);
+  padding: var(--space-6);
+  background: #111827;
 }
 
 .detail-image {
-  max-width: 90vw;
-  max-height: 85vh;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
   transition: transform var(--transition-normal);
 }
@@ -221,40 +225,58 @@ async function onFavoriteUpdate(photoId: number, isFavorite: boolean) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
 }
 
 .missing-banner {
   position: absolute;
-  top: var(--space-lg);
+  top: var(--space-4);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 77, 79, 0.9);
   color: #fff;
   padding: 8px 20px;
   border-radius: 100px;
-  font-size: var(--text-sm);
+  font-size: var(--text-caption);
   backdrop-filter: blur(8px);
 }
 
-/* ===== 右侧抽屉面板 ===== */
+/* 右侧信息面板（40%） */
 .drawer-panel {
   width: 380px;
   min-width: 380px;
   height: 100%;
   overflow-y: auto;
-  padding: var(--space-lg);
-  background: var(--card-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
+  padding: var(--space-4) var(--space-6);
+  background: var(--bg-card);
   border-left: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .drawer-panel {
-    width: 300px;
-    min-width: 300px;
+    width: 320px;
+    min-width: 320px;
   }
+}
+
+@media (max-width: 768px) {
+  .detail-body {
+    flex-direction: column;
+  }
+  .detail-preview {
+    flex: none;
+    height: 50%;
+  }
+  .drawer-panel {
+    width: 100%;
+    min-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+[data-theme="dark"] .detail-preview {
+  background: #0F172A;
 }
 </style>

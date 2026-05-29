@@ -46,26 +46,41 @@
       subtitle="为照片添加标签，快速分类查找"
     />
 
-    <div v-else class="tags-content">
-      <div v-for="(group, groupName) in groupedTags" :key="groupName" class="tag-group">
-        <h3 class="group-title">{{ groupName }}</h3>
-        <div class="tag-grid">
+    <div v-else class="tags-content"
+    >
+      <div
+        v-for="(group, groupName) in groupedTags"
+        :key="groupName"
+        class="tag-group"
+      >
+        <div class="group-header"
+        >
+          <div class="group-header-left"
+          >
+            <div class="group-accent-line" />
+            <h3 class="group-title">{{ groupName }}</h3>
+          </div>
+          <span class="group-count">{{ group.length }}</span>
+        </div>
+        <div class="tag-grid"
+        >
           <div
             v-for="(tag, index) in group"
             :key="tag.id"
             class="tag-card"
+            :class="{ 'is-empty': tag.photo_count === 0 }"
             :style="{ animationDelay: `${Math.min(index * 25, 400)}ms` }"
             @click="selectTag(tag)"
           >
-            <div class="tag-card-icon">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-              </svg>
-            </div>
-            <div class="tag-card-info">
+            <div class="tag-dot" :style="{ backgroundColor: getTagColor(tag.name) }" />
+            <div class="tag-card-info"
+            >
               <span class="tag-name">{{ tag.name_zh || tag.name }}</span>
-              <span class="tag-count">{{ tag.photo_count }} 张</span>
+              <span class="tag-count">{{ tag.photo_count > 0 ? `${tag.photo_count} 张` : '—' }}</span>
             </div>
+            <svg class="tag-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </div>
         </div>
       </div>
@@ -212,6 +227,19 @@ async function fetchTagList() {
   }
 }
 
+function getTagColor(name: string): string {
+  const colors = [
+    '#6366F1', '#8B5CF6', '#EC4899', '#F43F5E',
+    '#F97316', '#EAB308', '#22C55E', '#06B6D4',
+    '#3B82F6', '#A855F7', '#D946EF', '#F59E0B',
+  ]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return colors[Math.abs(hash) % colors.length]
+}
+
 function tagFontSize(count: number) {
   if (tags.value.length === 0) return `${MIN_FONT_SIZE}px`
   const maxCount = Math.max(...tags.value.map(t => t.photo_count), 1)
@@ -340,66 +368,104 @@ async function handleCreateTag() {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
+/* ===== 分类分组 ===== */
 .tag-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tag-group:last-child {
+  border-bottom: none;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.group-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.group-accent-line {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--brand-gradient);
 }
 
 .group-title {
-  font-size: var(--text-overline);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-placeholder);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
   margin: 0;
 }
 
+.group-count {
+  font-size: 12px;
+  color: var(--text-placeholder);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* ===== 标签网格（2列） ===== */
 .tag-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-3);
 }
 
+@media (max-width: 768px) {
+  .tag-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== 标签卡片 ===== */
 .tag-card {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  border-radius: 10px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, background 0.3s ease;
-  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  transition: all 200ms var(--ease-standard);
+  animation: stagger-in 0.35s var(--ease-standard) backwards;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .tag-card:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #D1D5DB;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
 }
 
-.tag-card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  background: var(--gray-100);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
+.tag-card.is-empty {
+  opacity: 0.5;
+}
+
+.tag-card.is-empty:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+/* 标签代表色圆点 */
+.tag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
-}
-
-.tag-card:hover .tag-card-icon {
-  background: var(--accent-medium);
-  color: var(--accent);
 }
 
 .tag-card-info {
@@ -407,11 +473,12 @@ async function handleCreateTag() {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 
 .tag-name {
-  font-size: var(--text-body);
-  font-weight: var(--font-weight-medium);
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -419,9 +486,22 @@ async function handleCreateTag() {
 }
 
 .tag-count {
-  font-size: var(--text-caption);
+  font-size: 12px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
+}
+
+.tag-arrow {
+  color: var(--text-placeholder);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 200ms var(--ease-standard);
+}
+
+.tag-card:hover .tag-arrow {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* ===== Dialogs ===== */

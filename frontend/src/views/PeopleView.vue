@@ -3,14 +3,18 @@
     <div class="page-header">
       <h2 class="page-title">人物</h2>
       <div class="header-actions">
-        <button class="pill-btn pill-btn--ghost" :class="{ 'is-loading': detecting }" :disabled="detecting" @click="onDetectFaces">
-          <span v-if="detecting" class="spinner-sm" />
-          检测人脸
-        </button>
-        <button class="pill-btn pill-btn--ghost" :class="{ 'is-loading': clustering }" :disabled="clustering" @click="onClusterFaces">
-          <span v-if="clustering" class="spinner-sm" />
-          重新聚类
-        </button>
+        <div class="action-group">
+          <button class="action-btn" :class="{ 'is-loading': detecting }" :disabled="detecting" @click="onDetectFaces">
+            <span v-if="detecting" class="spinner-sm" />
+            <span class="action-btn-main">扫描人脸</span>
+            <span class="action-btn-sub">自动识别照片中的人物</span>
+          </button>
+          <button class="action-btn" :class="{ 'is-loading': clustering }" :disabled="clustering" @click="onClusterFaces">
+            <span v-if="clustering" class="spinner-sm" />
+            <span class="action-btn-main">重新分组</span>
+            <span class="action-btn-sub">合并或拆分人物分组</span>
+          </button>
+        </div>
         <button
           v-if="selectedIds.length > 1"
           class="pill-btn pill-btn--primary"
@@ -116,7 +120,7 @@
               </button>
             </div>
             <div class="card-info">
-              <span class="card-name card-name--placeholder">添加姓名</span>
+              <span class="card-name card-name--placeholder" @click.stop="openRename(cluster)">添加姓名</span>
               <span class="card-count">{{ cluster.face_count }} 张照片</span>
             </div>
             <div v-if="selectedIds.includes(cluster.id)" class="check-badge">
@@ -311,7 +315,50 @@ async function onClusterFaces() {
 
 .header-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.action-group {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.action-btn-main {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.action-btn-sub {
+  font-size: 11px;
+  color: var(--text-placeholder);
+  font-weight: var(--font-weight-regular);
+}
+
+.action-btn:hover .action-btn-sub {
+  color: var(--accent);
+  opacity: 0.7;
 }
 
 .pill-btn--ghost {
@@ -428,11 +475,14 @@ async function onClusterFaces() {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform var(--transition-fast);
+  transition: all var(--transition-fast);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .cluster-card:hover .card-avatar {
   transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .card-avatar img {
@@ -444,8 +494,8 @@ async function onClusterFaces() {
 /* 编辑按钮 */
 .card-edit-btn {
   position: absolute;
-  bottom: 40px;
-  right: calc(50% - 48px);
+  bottom: 44px;
+  right: calc(50% - 52px);
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -487,22 +537,30 @@ async function onClusterFaces() {
 }
 
 .card-name {
-  font-size: var(--text-body);
-  font-weight: var(--font-weight-medium);
+  font-size: 16px;
+  font-weight: 600;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+  color: var(--text-primary);
 }
 
 .card-name--placeholder {
   color: var(--accent);
-  font-weight: var(--font-weight-regular);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.card-name--placeholder:hover {
+  opacity: 0.8;
 }
 
 .card-count {
-  font-size: var(--text-caption);
+  font-size: 12px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -514,12 +572,12 @@ async function onClusterFaces() {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--brand-gradient);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px var(--brand-glow);
 }
 
 .load-more {
