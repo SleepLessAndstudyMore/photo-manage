@@ -1,10 +1,16 @@
 :root {
-  /* === 主色 — 专业蓝 === */
-  --primary-600: #2563EB;
-  --primary-500: #3B82F6;
-  --primary-400: #60A5FA;
-  --primary-100: #DBEAFE;
-  --primary-50: #EFF6FF;
+  /* === 主色 — Indigo 品牌色 === */
+  --primary-600: #6366F1;
+  --primary-500: #818CF8;
+  --primary-400: #A5B4FC;
+  --primary-100: #E0E7FF;
+  --primary-50: #EEF2FF;
+
+  /* === 品牌渐变 === */
+  --brand-gradient: linear-gradient(135deg, #6366F1, #8B5CF6);
+  --brand-gradient-hover: linear-gradient(150deg, #4F46E5, #7C3AED);
+  --brand-glow: rgba(99, 102, 241, 0.15);
+  --brand-glow-strong: rgba(99, 102, 241, 0.25);
 
   /* === 中性色 — 8级梯度 === */
   --gray-900: #111827;
@@ -23,8 +29,8 @@
   --warning-100: #FEF3C7;
   --danger-500: #EF4444;
   --danger-100: #FEE2E2;
-  --info-500: #3B82F6;
-  --info-100: #DBEAFE;
+  --info-500: #6366F1;
+  --info-100: #E0E7FF;
 
   /* === 背景色 === */
   --bg-primary: var(--gray-50);
@@ -144,14 +150,20 @@
   --bg-dots-size: none;
   --window-radius: var(--radius-lg);
   --window-shadow: var(--shadow-lg);
-  --accent-glow: rgba(37, 99, 235, 0.15);
+  --accent-glow: var(--brand-glow);
 }
 
 [data-theme="dark"] {
+  /* === 品牌渐变 — 深色模式 === */
+  --brand-gradient: linear-gradient(135deg, #818CF8, #A78BFA);
+  --brand-gradient-hover: linear-gradient(150deg, #6366F1, #8B5CF6);
+  --brand-glow: rgba(129, 140, 248, 0.2);
+  --brand-glow-strong: rgba(129, 140, 248, 0.3);
+
   /* 主色 — 提亮 */
-  --primary-600: #3B82F6;
-  --primary-500: #60A5FA;
-  --primary-400: #93C5FD;
+  --primary-600: #818CF8;
+  --primary-500: #A5B4FC;
+  --primary-400: #C7D2FE;
 
   /* 中性色 — 深色梯度 */
   --gray-900: #F1F5F9;
@@ -180,9 +192,9 @@
   --text-placeholder: #64748B;
 
   /* 强调色 */
-  --accent: #3B82F6;
-  --accent-hover: #60A5FA;
-  --accent-light: rgba(59, 130, 246, 0.15);
+  --accent: #818CF8;
+  --accent-hover: #A5B4FC;
+  --accent-light: rgba(129, 140, 248, 0.15);
 
   /* 阴影 — 深色模式使用边框替代 */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -204,5 +216,5 @@
   --border-glass: rgba(51, 65, 85, 0.5);
 
   /* 强调色光晕 */
-  --accent-glow: rgba(59, 130, 246, 0.2);
+  --accent-glow: var(--brand-glow);
 }

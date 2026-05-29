@@ -103,18 +103,30 @@ button {
 /* 页面切换动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 150ms ease;
+  transition: opacity 150ms var(--ease-standard);
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
+/* 按钮交互 */
+button:not(:disabled),
+[role="button"],
+.pill-btn {
+  cursor: pointer;
+}
+button:not(:disabled):active,
+.pill-btn:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
 /* 列表项进入动画 */
 @keyframes stagger-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;

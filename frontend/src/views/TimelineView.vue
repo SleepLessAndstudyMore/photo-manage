@@ -88,6 +88,7 @@
         empty-text="选择一个日期查看照片"
         @photo-click="onPhotoClick"
         @load-more="onLoadMore"
+        @toggle-favorite="onToggleFavorite"
       />
     </main>
   </div>
@@ -159,6 +160,10 @@ function onPhotoClick(photo: Photo) {
 
 async function onLoadMore() {
   await photoStore.loadMore()
+}
+
+async function onToggleFavorite(photoId: number, isFavorite: boolean) {
+  await photoStore.updateMetadata(photoId, { is_favorite: isFavorite })
 }
 </script>
 

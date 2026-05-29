@@ -2,11 +2,15 @@
   <div id="photo-manager-app" :data-theme="theme">
     <!-- 左侧导航栏 -->
     <nav class="app-nav">
+      <!-- 品牌 Logo -->
       <div class="nav-brand">
-        <svg class="brand-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-        </svg>
+        <div class="brand-icon-wrapper">
+          <svg class="brand-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
         <span class="brand-name">PhotoVault</span>
+        <span class="brand-dot" />
       </div>
 
       <div class="nav-links">
@@ -87,7 +91,7 @@
     <!-- 内容区 -->
     <main class="app-main">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
+        <transition name="page" mode="out-in">
           <component :is="Component" />
         </transition>
       </router-view>
@@ -140,8 +144,8 @@ if (typeof window !== 'undefined') {
 
 /* ===== 左侧导航栏 ===== */
 .app-nav {
-  width: 240px;
-  min-width: 240px;
+  width: 220px;
+  min-width: 220px;
   display: flex;
   flex-direction: column;
   padding: var(--space-4) var(--space-3);
@@ -161,15 +165,37 @@ if (typeof window !== 'undefined') {
   margin-bottom: var(--space-4);
 }
 
+.brand-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--brand-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--brand-glow);
+}
+
 .brand-icon {
-  color: var(--accent);
+  width: 18px;
+  height: 18px;
 }
 
 .brand-name {
   font-size: var(--text-h3);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: -0.03em;
+}
+
+.brand-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ===== 导航链接组 ===== */
@@ -188,11 +214,11 @@ if (typeof window !== 'undefined') {
 }
 
 .nav-group-title {
-  font-size: var(--text-overline);
+  font-size: 12px;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-placeholder);
+  color: #6B7280;
   text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
+  letter-spacing: 0.08em;
   padding: var(--space-1) var(--space-3);
   margin-bottom: var(--space-1);
 }
@@ -214,13 +240,25 @@ if (typeof window !== 'undefined') {
 }
 
 .nav-link:hover {
-  background: var(--gray-50);
+  background: #F9FAFB;
   color: var(--text-primary);
 }
 
+.nav-link:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 20px;
+  border-radius: 0 2px 2px 0;
+  background: #E5E7EB;
+}
+
 .nav-link--active {
-  color: var(--accent);
-  background: var(--accent-light);
+  color: #4F46E5;
+  background: #EEF2FF;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -230,10 +268,18 @@ if (typeof window !== 'undefined') {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 2px;
+  width: 3px;
   height: 20px;
-  border-radius: 1px;
-  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  background: var(--brand-gradient);
+}
+
+.nav-link--active:hover {
+  background: #EEF2FF;
+}
+
+.nav-link--active:hover::before {
+  background: var(--brand-gradient);
 }
 
 .nav-icon {
@@ -241,6 +287,10 @@ if (typeof window !== 'undefined') {
   height: 18px;
   flex-shrink: 0;
   stroke-width: 1.5;
+}
+
+.nav-link--active .nav-icon {
+  color: #6366F1;
 }
 
 .nav-label {
@@ -261,6 +311,28 @@ if (typeof window !== 'undefined') {
   background: transparent;
 }
 
+/* ===== 深色模式适配 ===== */
+[data-theme="dark"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .nav-link:hover::before {
+  background: #475569;
+}
+
+[data-theme="dark"] .nav-link--active {
+  background: rgba(129, 140, 248, 0.15);
+  color: #818CF8;
+}
+
+[data-theme="dark"] .nav-link--active .nav-icon {
+  color: #818CF8;
+}
+
+[data-theme="dark"] .nav-group-title {
+  color: #94A3B8;
+}
+
 /* ===== 响应式 ===== */
 @media (max-width: 768px) {
   .app-nav {
@@ -273,6 +345,9 @@ if (typeof window !== 'undefined') {
     padding: var(--space-2) 0;
   }
   .brand-name {
+    display: none;
+  }
+  .brand-dot {
     display: none;
   }
   .nav-group-title {

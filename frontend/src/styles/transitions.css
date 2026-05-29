@@ -1,19 +1,41 @@
-/* ===== Apple 标准动效 ===== */
+/* ===== 统一动效体系 ===== */
 
-/* 页面过渡 — Fade */
+/* === 标准缓动曲线 === */
+:root {
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* ===== 页面过渡 — opacity + translateY ===== */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 200ms var(--ease-standard),
+              transform 200ms var(--ease-standard);
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ===== 淡入淡出 ===== */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--transition-normal) var(--ease-standard);
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
-/* 上滑进入 */
+/* ===== 上滑进入 ===== */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all var(--transition-normal);
+  transition: all var(--transition-normal) var(--ease-standard);
 }
 .slide-up-enter-from {
   opacity: 0;
@@ -24,10 +46,10 @@
   transform: translateY(-20px);
 }
 
-/* 缩放进入 */
+/* ===== 缩放进入 ===== */
 .scale-enter-active,
 .scale-leave-active {
-  transition: all 0.3s var(--ease-apple);
+  transition: all 0.3s var(--ease-standard);
 }
 .scale-enter-from,
 .scale-leave-to {
@@ -35,20 +57,20 @@
   transform: scale(0.95);
 }
 
-/* 抽屉滑入 */
+/* ===== 抽屉滑入 ===== */
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: transform 0.4s var(--ease-apple);
+  transition: transform 0.4s var(--ease-standard);
 }
 .drawer-enter-from,
 .drawer-leave-to {
   transform: translateX(100%);
 }
 
-/* 悬浮显现 */
+/* ===== 悬浮显现 ===== */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: all 0.25s var(--ease-apple);
+  transition: all 0.25s var(--ease-standard);
 }
 .fade-scale-enter-from,
 .fade-scale-leave-to {
@@ -56,11 +78,78 @@
   transform: scale(0.92);
 }
 
-/* === Stagger 动画 === */
+/* ===== 模态框动画 ===== */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 250ms var(--ease-standard);
+}
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 300ms var(--ease-standard),
+              opacity 300ms var(--ease-standard);
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
+  transform: scale(0.95) translateY(8px);
+  opacity: 0;
+}
+
+/* ===== Toast 右侧滑入 ===== */
+.toast-enter-active {
+  transition: transform 300ms var(--ease-decelerate),
+              opacity 200ms var(--ease-standard);
+}
+.toast-leave-active {
+  transition: transform 200ms var(--ease-accelerate),
+              opacity 150ms var(--ease-standard);
+}
+.toast-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.toast-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* ===== 下拉菜单 ===== */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: transform 150ms var(--ease-standard),
+              opacity 150ms var(--ease-standard);
+  transform-origin: top;
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: scaleY(0.95);
+}
+
+/* ===== 列表项交错动画 ===== */
+.stagger-list > * {
+  animation: stagger-in 0.35s var(--ease-standard) backwards;
+}
+.stagger-list > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-list > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-list > *:nth-child(3) { animation-delay: 60ms; }
+.stagger-list > *:nth-child(4) { animation-delay: 90ms; }
+.stagger-list > *:nth-child(5) { animation-delay: 120ms; }
+.stagger-list > *:nth-child(6) { animation-delay: 150ms; }
+.stagger-list > *:nth-child(7) { animation-delay: 180ms; }
+.stagger-list > *:nth-child(8) { animation-delay: 210ms; }
+.stagger-list > *:nth-child(9) { animation-delay: 240ms; }
+.stagger-list > *:nth-child(10) { animation-delay: 270ms; }
+.stagger-list > *:nth-child(n+11) { animation-delay: 300ms; }
+
+/* ===== Stagger 关键帧 ===== */
 @keyframes stagger-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -81,4 +170,34 @@
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== 品牌脉冲动画 ===== */
+@keyframes brand-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--brand-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* ===== 按钮交互基类 ===== */
+.btn-interactive {
+  transition: transform 100ms var(--ease-standard),
+              background 150ms var(--ease-standard),
+              box-shadow 150ms var(--ease-standard),
+              border-color 150ms var(--ease-standard);
+  cursor: pointer;
+}
+.btn-interactive:hover {
+  transform: scale(1.02);
+}
+.btn-interactive:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
 }
