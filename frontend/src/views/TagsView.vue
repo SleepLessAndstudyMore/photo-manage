@@ -12,12 +12,6 @@
           ]"
           @update:modelValue="fetchTagList()"
         />
-        <button class="pill-btn pill-btn--primary" @click="showAddTagDialog = true">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          创建标签
-        </button>
       </div>
     </div>
 
@@ -120,28 +114,13 @@
       </template>
     </el-dialog>
 
-    <!-- Create tag dialog -->
-    <el-dialog v-model="showAddTagDialog" title="创建标签" width="400px" class="glass-dialog">
-      <el-form label-position="top">
-        <el-form-item label="英文名称">
-          <el-input v-model="newTagName" placeholder="如: beautiful_landscape" />
-        </el-form-item>
-        <el-form-item label="中文名称">
-          <el-input v-model="newTagNameZh" placeholder="如: 美丽风景" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <button class="pill-btn" @click="showAddTagDialog = false">取消</button>
-        <button class="pill-btn pill-btn--primary" @click="handleCreateTag">创建</button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getTags, getTagPhotos, createTag } from '@/api/tags'
+import { getTags, getTagPhotos } from '@/api/tags'
 import SegmentedControl from '@/components/SegmentedControl.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
@@ -168,9 +147,6 @@ const searchQuery = ref('')
 const tagDialogVisible = ref(false)
 const selectedTag = ref<TagItem | null>(null)
 const tagPhotos = ref<PhotoItem[]>([])
-const showAddTagDialog = ref(false)
-const newTagName = ref('')
-const newTagNameZh = ref('')
 
 const MAX_FONT_SIZE = 28
 const MIN_FONT_SIZE = 13
@@ -262,14 +238,6 @@ function goToPhoto(id: number) {
   router.push(`/photos/${id}`)
 }
 
-async function handleCreateTag() {
-  if (!newTagName.value.trim()) return
-  await createTag({ name: newTagName.value.trim(), name_zh: newTagNameZh.value.trim() || undefined })
-  newTagName.value = ''
-  newTagNameZh.value = ''
-  showAddTagDialog.value = false
-  fetchTagList()
-}
 </script>
 
 <style scoped>
@@ -316,6 +284,7 @@ async function handleCreateTag() {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
+  height: 36px;
 }
 
 .search-input-wrapper:focus-within {
@@ -417,17 +386,11 @@ async function handleCreateTag() {
   font-weight: 500;
 }
 
-/* ===== 标签网格（2列） ===== */
+/* ===== 标签网格 ===== */
 .tag-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-3);
-}
-
-@media (max-width: 768px) {
-  .tag-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ===== 标签卡片 ===== */

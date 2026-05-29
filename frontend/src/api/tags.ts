@@ -16,10 +16,6 @@ export function removePhotoTag(photoId: number, tagId: number) {
   return client.delete(`/photos/${photoId}/tags/${tagId}`)
 }
 
-export function createTag(data: { name: string; name_zh?: string }) {
-  return client.post('/photos/0/tags', { ...data, source: 'manual' })
-}
-
 export function deleteTag(tagId: number) {
   return client.delete(`/tags/${tagId}`)
 }

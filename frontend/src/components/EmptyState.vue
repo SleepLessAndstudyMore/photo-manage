@@ -85,7 +85,7 @@
     <div v-if="$slots.action || actionText" class="empty-action">
       <slot name="action">
         <button v-if="actionText" class="empty-btn" @click="$emit('action')">
-          <svg v-if="actionIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -150,33 +150,34 @@ defineEmits<{
 }
 
 .empty-action {
-  margin-top: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .empty-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-md);
+  padding: 10px 24px;
+  border-radius: 100px;
   border: none;
   background: var(--brand-gradient);
   color: white;
-  font-size: var(--text-body);
-  font-weight: var(--font-weight-medium);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 200ms var(--ease-standard);
-  box-shadow: 0 4px 12px var(--brand-glow);
+  box-shadow: 0 4px 14px var(--brand-glow), 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .empty-btn:hover {
   background: var(--brand-gradient-hover);
-  box-shadow: 0 6px 16px var(--brand-glow-strong);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--brand-glow-strong), 0 2px 6px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
 }
 
 .empty-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96) translateY(0);
 }
 
 [data-theme="dark"] .empty-illustration {

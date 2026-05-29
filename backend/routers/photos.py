@@ -380,7 +380,29 @@ async def update_photo(
     session.add(photo)
     session.commit()
     session.refresh(photo)
-    return PhotoDetailResponse.model_validate(photo)
+
+    # Populate tags via explicit join (avoid eager relationship validation)
+    tags_data = []
+    pts = session.exec(
+        select(PhotoTag, Tag)
+        .join(Tag)
+        .where(PhotoTag.photo_id == photo_id)
+    ).all()
+    for pt, tag in pts:
+        tags_data.append(PhotoTagInfo(
+            id=pt.photo_id,
+            tag_id=tag.id,
+            tag_name=tag.name,
+            tag_name_zh=tag.name_zh,
+            confidence=pt.confidence,
+            source=pt.source,
+        ))
+
+    # Clear relationship to prevent pydantic from validating raw PhotoTag objects
+    photo_data = {col: getattr(photo, col) for col in photo.model_dump()}
+    resp = PhotoDetailResponse.model_validate(photo_data)
+    resp.tags = tags_data
+    return resp
 
 
 @router.get("/{photo_id}/stream")

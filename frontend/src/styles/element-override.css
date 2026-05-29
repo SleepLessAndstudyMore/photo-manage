@@ -28,3 +28,14 @@
 
   --el-color-info: #818CF8;
 }
+
+/* ===== 统一输入框高度为 36px ===== */
+.el-input:not(.el-textarea) {
+  height: 36px;
+}
+.el-input:not(.el-textarea) .el-input__wrapper {
+  height: 100%;
+}
+.el-input__inner {
+  height: 100%;
+}

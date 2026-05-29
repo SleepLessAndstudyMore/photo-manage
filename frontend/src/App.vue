@@ -9,7 +9,7 @@
     <!-- 移动端遮罩 -->
     <div v-if="isMobile && mobileNavOpen" class="mobile-overlay" @click="mobileNavOpen = false" />
     <!-- 左侧导航栏 -->
-    <nav class="app-nav" :class="{ 'is-open': mobileNavOpen }">
+    <nav class="app-nav" :class="{ 'is-open': mobileNavOpen, collapsed: navCollapsed }">
       <!-- 品牌 Logo -->
       <div class="nav-brand">
         <div class="brand-icon-wrapper">
@@ -18,6 +18,11 @@
           </svg>
         </div>
         <span class="brand-name">PhotoVault</span>
+        <button class="collapse-btn" @click="navCollapsed = !navCollapsed" title="收起/展开菜单">
+          <svg class="collapse-icon" :class="{ 'is-collapsed': navCollapsed }" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
         <span class="brand-dot" />
       </div>
 
@@ -114,6 +119,7 @@ import { useSystemStore } from '@/stores/system'
 const theme = ref(localStorage.getItem('theme') || 'system')
 const isMobile = ref(false)
 const mobileNavOpen = ref(false)
+const navCollapsed = ref(false)
 
 function checkMobile() {
   isMobile.value = window.innerWidth <= 768
@@ -177,6 +183,7 @@ if (typeof window !== 'undefined') {
   border-right: 1px solid var(--border-color);
   flex-shrink: 0;
   z-index: 100;
+  transition: width 0.3s var(--ease-standard), min-width 0.3s var(--ease-standard), padding 0.3s var(--ease-standard);
 }
 
 /* ===== 品牌 Logo ===== */
@@ -219,6 +226,36 @@ if (typeof window !== 'undefined') {
   background: var(--brand-gradient);
   margin-left: auto;
   flex-shrink: 0;
+}
+
+/* ===== 折叠按钮 ===== */
+.collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.collapse-btn:hover {
+  background: var(--gray-100);
+  color: var(--text-primary);
+}
+
+.collapse-icon {
+  transition: transform 0.25s var(--ease-standard);
+}
+
+.collapse-icon.is-collapsed {
+  transform: rotate(180deg);
 }
 
 /* ===== 导航链接组 ===== */
@@ -327,6 +364,42 @@ if (typeof window !== 'undefined') {
   margin-top: auto;
 }
 
+/* ===== 折叠状态 ===== */
+.app-nav.collapsed {
+  width: 64px;
+  min-width: 64px;
+  padding: var(--space-4) var(--space-2);
+}
+
+.app-nav.collapsed .nav-brand {
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+.app-nav.collapsed .brand-name,
+.app-nav.collapsed .brand-dot {
+  display: none;
+}
+
+.app-nav.collapsed .nav-group-title {
+  display: none;
+}
+
+.app-nav.collapsed .nav-label {
+  display: none;
+}
+
+.app-nav.collapsed .nav-link {
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+.app-nav.collapsed .nav-link--active::before {
+  left: 0;
+  width: 2px;
+  height: 24px;
+}
+
 /* ===== 内容区 ===== */
 .app-main {
   flex: 1;
@@ -410,9 +483,17 @@ if (typeof window !== 'undefined') {
   .app-main {
     padding-top: 56px;
   }
+
+  .collapse-btn {
+    display: none;
+  }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
+  .collapse-btn {
+    display: none;
+  }
+
   .app-nav {
     width: 64px;
     min-width: 64px;

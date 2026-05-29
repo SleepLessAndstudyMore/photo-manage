@@ -343,7 +343,7 @@ function onScroll() {}
 /* ===== 照片网格 ===== */
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 4px;
 }
 
@@ -527,7 +527,7 @@ function onScroll() {}
 /* ===== 骨架屏 ===== */
 .skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 4px;
   padding: var(--space-4);
 }

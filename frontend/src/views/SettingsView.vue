@@ -431,7 +431,7 @@ async function saveConfig() {
 /* ===== 系统状态 — 统计卡片 ===== */
 .status-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-4);
 }
 

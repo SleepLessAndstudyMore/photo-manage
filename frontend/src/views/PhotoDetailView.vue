@@ -203,7 +203,7 @@ async function onFavoriteUpdate(photoId: number, isFavorite: boolean) {
   position: relative;
   overflow: hidden;
   padding: var(--space-6);
-  background: #111827;
+  background: #ffffff;
 }
 
 .detail-image {

@@ -287,6 +287,7 @@ onMounted(async () => {
     const { data } = await getTags({ page_size: 200 })
     allTags.value = data.items ?? []
   } catch { /* ignore */ }
+  doSearch()
 })
 
 async function doSearch() {
@@ -447,7 +448,7 @@ function formatDate(dateStr: string) {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
-  height: 44px;
+  height: 36px;
 }
 
 .search-input-wrapper.focused {
@@ -650,7 +651,8 @@ function formatDate(dateStr: string) {
 
 .filter-field input {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
+  height: 36px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
@@ -706,25 +708,21 @@ function formatDate(dateStr: string) {
   transition: transform 0.2s var(--ease-standard);
 }
 
-/* 展开动画 */
+/* 展开动画 — 只用 transform + opacity，GPU 加速 */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s var(--ease-standard);
-  overflow: hidden;
+  transition: transform 0.25s var(--ease-standard), opacity 0.2s var(--ease-standard);
+  transform-origin: top center;
 }
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  max-height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
+  transform: scaleY(0.92) translateY(-6px);
 }
 .expand-enter-to,
 .expand-leave-from {
   opacity: 1;
-  max-height: 80px;
+  transform: scaleY(1) translateY(0);
 }
 
 .filter-row-more {
@@ -796,7 +794,7 @@ function formatDate(dateStr: string) {
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--space-3);
   overflow-y: auto;
   flex: 1;
@@ -804,6 +802,7 @@ function formatDate(dateStr: string) {
 
 /* ===== 结果卡片 ===== */
 .result-card {
+  position: relative;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-card);
@@ -811,6 +810,7 @@ function formatDate(dateStr: string) {
   cursor: pointer;
   transition: transform 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
   animation: stagger-in 0.35s var(--ease-standard) backwards;
+  aspect-ratio: 1;
 }
 
 .result-card:hover {
@@ -820,7 +820,7 @@ function formatDate(dateStr: string) {
 
 .result-card img {
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
   object-fit: cover;
   display: block;
 }

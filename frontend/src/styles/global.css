@@ -218,6 +218,32 @@ select:focus {
 .radius-panel { border-radius: 12px; }
 .radius-page { border-radius: 16px; }
 
+/* ===== Element Plus 输入框透明背景（覆盖白色） ===== */
+/* 根元素 id 是 #photo-manager-app */
+#photo-manager-app .el-input .el-input__wrapper,
+#photo-manager-app .el-input .el-input__wrapper.is-focus,
+#photo-manager-app .el-input .el-input__wrapper:hover,
+#photo-manager-app .el-input .el-input__wrapper.is-hovering {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#photo-manager-app .el-input .el-input__inner {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#photo-manager-app .el-textarea__inner {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#photo-manager-app .el-input-number .el-input__wrapper,
+#photo-manager-app .el-select .el-input__wrapper {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* 深色模式适配 */
 [data-theme="dark"] .el-skeleton {
   --el-skeleton-color: var(--gray-800);
