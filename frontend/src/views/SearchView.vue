@@ -24,7 +24,7 @@
             class="search-input"
             placeholder="描述你想找的照片，例如：去年在海边的猫..."
             @focus="hybridFocused = true"
-            @blur="hybridFocused = false"
+            @blur="handleBlur"
             @keyup.enter="doSearch"
           />
           <button v-if="hybridQuery" class="search-clear" @click="hybridQuery = ''">
@@ -37,6 +37,28 @@
             <span v-else>搜索</span>
           </button>
         </div>
+
+        <!-- 搜索历史 -->
+        <div v-if="showHistory && searchHistory.length > 0" class="search-history">
+          <div class="history-header">
+            <span class="history-label">最近搜索</span>
+            <button class="history-clear" @click="clearHistory">清除全部</button>
+          </div>
+          <div class="history-list">
+            <button
+              v-for="item in searchHistory"
+              :key="item"
+              class="history-item"
+              @click="hybridQuery = item; doSearch(); showHistory = false"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>{{ item }}</span>
+            </button>
+          </div>
+        </div>
+
         <div class="hybrid-hints">
           <button class="hint-chip" @click="hybridQuery = '去年在海边的猫'">去年在海边的猫</button>
           <button class="hint-chip" @click="hybridQuery = '今年旅行'">今年旅行</button>
@@ -49,15 +71,9 @@
 
       <!-- Structured filters -->
       <div v-else class="structured-toolbar">
-        <div class="filter-row">
-          <div class="filter-field">
+        <div class="filter-row filter-row-primary">
+          <div class="filter-field filter-name">
             <input v-model="structuredFilters.file_name" type="text" placeholder="文件名" />
-          </div>
-          <div class="filter-field">
-            <input v-model="structuredFilters.camera_model" type="text" placeholder="相机型号" />
-          </div>
-          <div class="filter-field">
-            <input v-model="structuredFilters.lens_model" type="text" placeholder="镜头" />
           </div>
           <div class="filter-field filter-date">
             <el-date-picker v-model="structuredFilters.date_from" type="date" value-format="YYYY-MM-DD" placeholder="日期从" size="default" />
@@ -65,16 +81,32 @@
           <div class="filter-field filter-date">
             <el-date-picker v-model="structuredFilters.date_to" type="date" value-format="YYYY-MM-DD" placeholder="日期至" size="default" />
           </div>
-          <div class="filter-field filter-wide">
+          <div class="filter-field filter-tags">
             <el-select v-model="structuredFilters.tag_ids" multiple clearable collapse-tags placeholder="标签" style="width: 100%">
               <el-option v-for="tag in allTags" :key="tag.id" :label="tag.name_zh || tag.name" :value="tag.id" />
             </el-select>
           </div>
+          <button class="filter-toggle" @click="showMoreFilters = !showMoreFilters">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" :style="{ transform: showMoreFilters ? 'rotate(180deg)' : '' }">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            {{ showMoreFilters ? '收起' : '更多筛选' }}
+          </button>
         </div>
-        <div class="filter-row filter-row-bottom">
-          <div class="filter-extras">
-            <el-rate v-model="structuredFilters.rating_min" :max="5" />
-            <div class="filter-switch">
+
+        <!-- 展开的高级筛选 -->
+        <Transition name="expand">
+          <div v-show="showMoreFilters" class="filter-row filter-row-more">
+            <div class="filter-field">
+              <input v-model="structuredFilters.camera_model" type="text" placeholder="相机型号" />
+            </div>
+            <div class="filter-field">
+              <input v-model="structuredFilters.lens_model" type="text" placeholder="镜头" />
+            </div>
+            <div class="filter-field">
+              <el-rate v-model="structuredFilters.rating_min" :max="5" />
+            </div>
+            <div class="filter-field filter-switch-inline">
               <el-switch v-model="structuredFilters.is_favorite" />
               <span>仅收藏</span>
             </div>
@@ -83,6 +115,9 @@
               <el-radio-button value="OR">或</el-radio-button>
             </el-radio-group>
           </div>
+        </Transition>
+
+        <div class="filter-row filter-row-bottom">
           <div class="filter-btns">
             <button class="pill-btn pill-btn--primary" :disabled="searching" @click="doSearch">搜索</button>
             <button class="pill-btn" @click="resetFilters">重置</button>
@@ -104,14 +139,15 @@
         <el-skeleton :rows="3" animated />
       </div>
 
-      <div v-else-if="results.length === 0" class="results-empty">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <p>未找到匹配的照片</p>
-      </div>
+      <EmptyState
+        v-else-if="results.length === 0"
+        type="search"
+        title="未找到匹配的照片"
+        subtitle="试试其他关键词"
+      />
 
       <template v-else>
+        <div class="results-divider" />
         <div class="results-header">
           <span class="results-count">找到 {{ total }} 张照片</span>
           <SegmentedControl
@@ -164,6 +200,7 @@ import { useRouter } from 'vue-router'
 import { searchPhotos, generateEmbeddings } from '@/api/photos'
 import { getTags } from '@/api/tags'
 import SegmentedControl from '@/components/SegmentedControl.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface PhotoItem {
   id: number
@@ -192,6 +229,45 @@ const results = ref<PhotoItem[]>([])
 const total = ref(0)
 const currentPage = ref(1)
 const sortBy = ref('date_taken')
+const showMoreFilters = ref(false)
+
+// 搜索历史
+const STORAGE_KEY = 'photo_search_history'
+const searchHistory = ref<string[]>([])
+const showHistory = ref(false)
+
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      searchHistory.value = JSON.parse(saved)
+    }
+  } catch { /* ignore */ }
+}
+
+function saveToHistory(query: string) {
+  if (!query.trim()) return
+  const trimmed = query.trim()
+  searchHistory.value = [trimmed, ...searchHistory.value.filter(h => h !== trimmed)].slice(0, 5)
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(searchHistory.value))
+  } catch { /* ignore */ }
+}
+
+function clearHistory() {
+  searchHistory.value = []
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch { /* ignore */ }
+}
+
+function handleBlur() {
+  // 延迟关闭，让点击历史项有时间触发
+  setTimeout(() => {
+    hybridFocused.value = false
+    showHistory.value = false
+  }, 200)
+}
 
 const structuredFilters = reactive({
   file_name: '',
@@ -206,17 +282,22 @@ const structuredFilters = reactive({
 })
 
 onMounted(async () => {
+  loadHistory()
   try {
     const { data } = await getTags({ page_size: 200 })
     allTags.value = data.items ?? []
   } catch { /* ignore */ }
-  doSearch()
 })
 
 async function doSearch() {
   searching.value = true
   searched.value = true
   currentPage.value = 1
+  showHistory.value = false
+
+  if (searchMode.value === 'hybrid' && hybridQuery.value.trim()) {
+    saveToHistory(hybridQuery.value)
+  }
 
   try {
     let body: Record<string, unknown>
@@ -340,7 +421,7 @@ function formatDate(dateStr: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 
 .page-title {
@@ -362,10 +443,11 @@ function formatDate(dateStr: string) {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
+  height: 44px;
 }
 
 .search-input-wrapper.focused {
@@ -374,8 +456,8 @@ function formatDate(dateStr: string) {
 }
 
 .search-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   color: var(--text-placeholder);
 }
@@ -385,7 +467,7 @@ function formatDate(dateStr: string) {
   border: none;
   background: transparent;
   outline: none;
-  font-size: var(--text-body);
+  font-size: 15px;
   color: var(--text-primary);
   font-family: inherit;
   padding: var(--space-2) 0;
@@ -415,19 +497,21 @@ function formatDate(dateStr: string) {
 
 .search-submit {
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   border: none;
-  background: var(--accent);
+  background: var(--brand-gradient);
   color: #fff;
   font-size: var(--text-body);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
   min-width: 56px;
+  box-shadow: 0 2px 8px var(--brand-glow);
 }
 
 .search-submit:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--brand-gradient-hover);
+  box-shadow: 0 4px 12px var(--brand-glow-strong);
 }
 
 .search-submit:disabled {
@@ -443,6 +527,75 @@ function formatDate(dateStr: string) {
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   display: inline-block;
+}
+
+/* ===== 搜索历史 ===== */
+.search-history {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-top: var(--space-1);
+  box-shadow: var(--shadow-md);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.history-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.history-clear {
+  font-size: 12px;
+  color: var(--text-placeholder);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.history-clear:hover {
+  color: var(--accent);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.history-item:hover {
+  background: var(--gray-50);
+  color: var(--text-primary);
+}
+
+.history-item svg {
+  flex-shrink: 0;
+  color: var(--text-placeholder);
 }
 
 .hybrid-hints {
@@ -476,13 +629,17 @@ function formatDate(dateStr: string) {
 .structured-toolbar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .filter-row {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row-primary {
   align-items: center;
 }
 
@@ -509,9 +666,9 @@ function formatDate(dateStr: string) {
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
-.filter-wide {
+.filter-name {
   flex: 1.5;
-  min-width: 180px;
+  min-width: 200px;
 }
 
 .filter-date {
@@ -519,25 +676,79 @@ function formatDate(dateStr: string) {
   min-width: 150px;
 }
 
-.filter-row-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: var(--space-1);
+.filter-tags {
+  flex: 1.5;
+  min-width: 200px;
 }
 
-.filter-extras {
-  display: flex;
+.filter-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-.filter-switch {
+.filter-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.filter-toggle svg {
+  transition: transform 0.2s var(--ease-standard);
+}
+
+/* 展开动画 */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.2s var(--ease-standard);
+  overflow: hidden;
+}
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 80px;
+}
+
+.filter-row-more {
+  padding: var(--space-3);
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.filter-switch-inline {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-body);
   color: var(--text-secondary);
+  min-width: auto;
+  flex: 0 0 auto;
+}
+
+.filter-row-bottom {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: var(--space-1);
 }
 
 .filter-btns {
@@ -550,10 +761,10 @@ function formatDate(dateStr: string) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) var(--space-6);
+  padding: 0 var(--space-6);
 }
 
-.results-placeholder, .results-loading, .results-empty {
+.results-placeholder, .results-loading {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -561,6 +772,12 @@ function formatDate(dateStr: string) {
   justify-content: center;
   color: var(--text-placeholder);
   gap: var(--space-4);
+}
+
+.results-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: var(--space-4) 0;
 }
 
 .results-header {
@@ -572,7 +789,7 @@ function formatDate(dateStr: string) {
 }
 
 .results-count {
-  font-size: var(--text-caption);
+  font-size: 14px;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
@@ -587,18 +804,18 @@ function formatDate(dateStr: string) {
 
 /* ===== 结果卡片 ===== */
 .result-card {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-card);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: stagger-in 0.4s var(--transition-normal) backwards;
+  transition: transform 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
+  animation: stagger-in 0.35s var(--ease-standard) backwards;
 }
 
 .result-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .result-card img {
@@ -629,7 +846,7 @@ function formatDate(dateStr: string) {
   font-size: 10px;
   color: #fff;
   background: var(--accent);
-  padding: 0 var(--space-2);
+  padding: 2px var(--space-2);
   border-radius: var(--radius-full);
   font-weight: var(--font-weight-semibold);
 }
@@ -642,5 +859,17 @@ function formatDate(dateStr: string) {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+[data-theme="dark"] .search-history {
+  background: var(--bg-card);
+}
+
+[data-theme="dark"] .history-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .filter-row-more {
+  background: rgba(255, 255, 255, 0.02);
 }
 </style>

@@ -24,15 +24,12 @@
       <el-skeleton :rows="3" animated />
     </div>
 
-    <div v-else-if="groups.length === 0" class="dup-empty">
-      <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
-      </div>
-      <p class="empty-title">未发现重复或相似照片</p>
-      <p class="text-secondary">你的照片库很干净</p>
-    </div>
+    <EmptyState
+      v-else-if="groups.length === 0"
+      type="clean"
+      title="未发现重复或相似照片"
+      subtitle="你的照片库很干净"
+    />
 
     <div v-else class="dup-list">
       <div v-for="(group, idx) in groups" :key="idx" class="dup-card" :style="{ animationDelay: `${Math.min(idx * 50, 400)}ms` }">
@@ -106,6 +103,7 @@
 import { ref, onMounted } from 'vue'
 import { getDuplicates } from '@/api/photos'
 import SegmentedControl from '@/components/SegmentedControl.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface PhotoBrief {
   id: number

@@ -17,14 +17,12 @@
       <div v-if="!folderData" class="loading-wrap">
         <el-skeleton :rows="3" animated />
       </div>
-      <div v-else-if="folderData.items.length === 0" class="empty-wrap">
-        <div class="empty-icon-float">
-          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
-        </div>
-        <p>暂无文件夹</p>
-      </div>
+      <EmptyState
+        v-else-if="folderData.items.length === 0"
+        type="folder"
+        title="暂无文件夹"
+        subtitle="添加图库源后，文件夹将在这里显示"
+      />
       <div v-else class="folder-cards">
         <div
           v-for="(folder, index) in folderData.items"
@@ -82,6 +80,7 @@ import { usePhotoStore } from '@/stores/photo'
 import type { Photo } from '@/types/photo'
 import PhotoGrid from '@/components/PhotoGrid.vue'
 import SegmentedControl from '@/components/SegmentedControl.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const router = useRouter()
 const photoStore = usePhotoStore()

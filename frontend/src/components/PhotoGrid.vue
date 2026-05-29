@@ -10,25 +10,12 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-else-if="!loading && photos.length === 0" class="empty-state">
-      <div class="empty-illustration">
-        <svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- 品牌渐变背景 -->
-          <defs>
-            <linearGradient id="brandGrad" x1="0" y1="0" x2="160" y2="120" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#6366F1" stop-opacity="0.15"/>
-              <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.1"/>
-            </linearGradient>
-          </defs>
-          <rect x="30" y="20" width="100" height="80" rx="16" fill="url(#brandGrad)"/>
-          <rect x="45" y="40" width="70" height="50" rx="8" stroke="#6366F1" stroke-width="1.5" fill="none" opacity="0.3"/>
-          <circle cx="65" cy="62" r="8" stroke="#6366F1" stroke-width="1.5" fill="none" opacity="0.3"/>
-          <path d="M50 82l12-12 8 8 12-16 18 20" stroke="#8B5CF6" stroke-width="1.5" opacity="0.3"/>
-        </svg>
-      </div>
-      <p class="empty-text">{{ emptyText || '暂无照片' }}</p>
-      <p class="empty-subtitle">将照片添加到图库源，精彩瞬间将在这里呈现</p>
-    </div>
+    <EmptyState
+      v-else-if="!loading && photos.length === 0"
+      type="photos"
+      :title="emptyText || '暂无照片'"
+      subtitle="将照片添加到图库源，精彩瞬间将在这里呈现"
+    />
 
     <!-- 照片网格（按日期分组） -->
     <div v-else ref="scrollRef" class="photo-scroll-area" @scroll="onScroll">
@@ -144,6 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Photo } from '@/types/photo'
+import EmptyState from './EmptyState.vue'
 
 const props = withDefaults(defineProps<{
   photos: Photo[]

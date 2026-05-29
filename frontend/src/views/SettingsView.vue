@@ -2,25 +2,45 @@
   <div class="settings-page">
     <h2 class="page-title">设置</h2>
 
-    <!-- System Status — 大数字展示卡片 -->
+    <!-- System Status — 统计卡片 -->
     <section class="settings-section">
       <h3 class="section-title">系统状态</h3>
       <div v-if="sysStatus" class="status-cards">
         <div class="status-card">
+          <div class="status-card-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span class="status-label">照片总数</span>
+          </div>
           <span class="status-value">{{ sysStatus.total_photos }}</span>
-          <span class="status-label">照片总数</span>
         </div>
         <div class="status-card">
+          <div class="status-card-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="status-label">图库源</span>
+          </div>
           <span class="status-value">{{ sysStatus.total_libraries }}</span>
-          <span class="status-label">图库源</span>
         </div>
         <div class="status-card">
+          <div class="status-card-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+            <span class="status-label">数据库</span>
+          </div>
           <span class="status-value">{{ sysStatus.db_size_mb.toFixed(1) }}<span class="status-unit">MB</span></span>
-          <span class="status-label">数据库</span>
         </div>
         <div class="status-card">
+          <div class="status-card-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span class="status-label">缩略图</span>
+          </div>
           <span class="status-value">{{ sysStatus.thumbnail_size_mb.toFixed(1) }}<span class="status-unit">MB</span></span>
-          <span class="status-label">缩略图</span>
         </div>
       </div>
 
@@ -408,32 +428,55 @@ async function saveConfig() {
   display: inline-block;
 }
 
-/* ===== 系统状态 — 大数字展示 ===== */
+/* ===== 系统状态 — 统计卡片 ===== */
 .status-cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--space-4);
-  flex-wrap: wrap;
 }
 
 .status-card {
-  flex: 1;
-  min-width: 140px;
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
+  padding: 20px;
+  border-radius: var(--radius-lg);
   background: var(--gray-50);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-fast);
+  cursor: default;
+}
+
+.status-card:hover {
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.status-card-header {
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
+
+.status-card-header svg {
+  color: var(--accent);
+}
+
+.status-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .status-value {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
-  color: var(--accent);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--tracking-tight);
+  line-height: 1.2;
 }
 
 .status-unit {
@@ -441,11 +484,6 @@ async function saveConfig() {
   font-weight: var(--font-weight-regular);
   margin-left: 2px;
   opacity: 0.6;
-}
-
-.status-label {
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
 }
 
 .tasks-area {

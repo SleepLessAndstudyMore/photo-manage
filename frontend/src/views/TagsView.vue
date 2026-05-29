@@ -39,15 +39,12 @@
       <el-skeleton :rows="3" animated />
     </div>
 
-    <div v-else-if="filteredTags.length === 0" class="tags-empty">
-      <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-        </svg>
-      </div>
-      <p>暂无标签</p>
-      <p class="text-secondary">扫描照片后将自动生成 AI 标签</p>
-    </div>
+    <EmptyState
+      v-else-if="filteredTags.length === 0"
+      type="tags"
+      title="暂无标签"
+      subtitle="为照片添加标签，快速分类查找"
+    />
 
     <div v-else class="tags-content">
       <div v-for="(group, groupName) in groupedTags" :key="groupName" class="tag-group">
@@ -131,6 +128,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTags, getTagPhotos, createTag } from '@/api/tags'
 import SegmentedControl from '@/components/SegmentedControl.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface TagItem {
   id: number

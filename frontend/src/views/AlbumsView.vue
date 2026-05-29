@@ -14,18 +14,14 @@
       <el-skeleton :rows="3" animated />
     </div>
 
-    <div v-else-if="albums.length === 0" class="albums-empty">
-      <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
-        </svg>
-      </div>
-      <p>暂无相册</p>
-      <p class="text-secondary">创建相册来整理你的精选照片</p>
-      <button class="pill-btn pill-btn--primary" style="margin-top: 16px" @click="showCreateDialog = true">
-        创建第一个相册
-      </button>
-    </div>
+    <EmptyState
+      v-else-if="albums.length === 0"
+      type="albums"
+      title="暂无相册"
+      subtitle="将珍贵瞬间收藏进相册，随时重温美好回忆"
+      action-text="创建第一个相册"
+      @action="showCreateDialog = true"
+    />
 
     <div v-else class="albums-grid">
       <div
@@ -76,6 +72,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAlbums, createAlbum } from '@/api/albums'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface AlbumItem {
   id: number

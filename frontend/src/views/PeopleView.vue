@@ -33,18 +33,14 @@
     </div>
 
     <!-- Empty -->
-    <div v-else-if="clusters.length === 0" class="empty-area">
-      <div class="empty-icon-float">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-        </svg>
-      </div>
-      <p class="empty-title">尚未检测到人脸</p>
-      <p class="text-secondary">开启人脸检测后，可自动识别照片中的人物</p>
-      <button class="pill-btn pill-btn--primary" style="margin-top: 16px" :disabled="detecting" @click="onDetectFaces">
-        检测人脸
-      </button>
-    </div>
+    <EmptyState
+      v-else-if="clusters.length === 0"
+      type="people"
+      title="尚未检测到人脸"
+      subtitle="扫描照片中的人脸，自动按人物分组"
+      action-text="开始扫描"
+      @action="onDetectFaces"
+    />
 
     <!-- Clusters grid -->
     <template v-else>
@@ -173,6 +169,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getFaceClusters, detectFaces, clusterFaces, mergeFaceClusters, updateFaceCluster } from '@/api/faces'
 import type { FaceCluster } from '@/types/face'
+import EmptyState from '@/components/EmptyState.vue'
 
 const router = useRouter()
 

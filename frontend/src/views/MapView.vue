@@ -9,6 +9,12 @@
         <el-icon class="is-loading" :size="24"><Loading /></el-icon>
         <p>加载地图中...</p>
       </div>
+      <EmptyState
+        v-else-if="!loading && allPhotos.length === 0"
+        type="map"
+        title="暂无带位置信息的照片"
+        subtitle="照片的地理位置将显示在这里"
+      />
       <div ref="mapEl" class="map-leaflet"></div>
       <div v-if="error" class="map-error">
         <p>{{ error }}</p>
@@ -35,6 +41,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue'
 import { getGpsPhotos } from '@/api/photos'
+import EmptyState from '@/components/EmptyState.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
