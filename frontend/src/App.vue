@@ -1,7 +1,15 @@
 <template>
   <div id="photo-manager-app" :data-theme="theme">
+    <!-- 移动端汉堡按钮 -->
+    <button v-if="isMobile" class="mobile-menu-btn" @click="mobileNavOpen = !mobileNavOpen">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <!-- 移动端遮罩 -->
+    <div v-if="isMobile && mobileNavOpen" class="mobile-overlay" @click="mobileNavOpen = false" />
     <!-- 左侧导航栏 -->
-    <nav class="app-nav">
+    <nav class="app-nav" :class="{ 'is-open': mobileNavOpen }">
       <!-- 品牌 Logo -->
       <div class="nav-brand">
         <div class="brand-icon-wrapper">
@@ -100,14 +108,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSystemStore } from '@/stores/system'
 
 const theme = ref(localStorage.getItem('theme') || 'system')
+const isMobile = ref(false)
+const mobileNavOpen = ref(false)
+
+function checkMobile() {
+  isMobile.value = window.innerWidth <= 768
+  if (!isMobile.value) {
+    mobileNavOpen.value = false
+  }
+}
 
 onMounted(() => {
   useSystemStore().connectWs()
   applyTheme(theme.value)
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 
 function applyTheme(t: string) {
@@ -333,8 +356,63 @@ if (typeof window !== 'undefined') {
   color: #94A3B8;
 }
 
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 200;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 90;
+}
+
 /* ===== 响应式 ===== */
 @media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .mobile-overlay {
+    display: block;
+  }
+
+  .app-nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease-standard);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .app-nav.is-open {
+    transform: translateX(0);
+  }
+
+  .app-main {
+    padding-top: 56px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
   .app-nav {
     width: 64px;
     min-width: 64px;

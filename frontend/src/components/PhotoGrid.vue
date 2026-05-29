@@ -359,6 +359,10 @@ function onScroll() {}
   overflow: hidden;
 }
 
+[data-theme="dark"] .photo-card .photo-card-inner {
+  border: 1px solid #334155;
+}
+
 .photo-card:hover {
   transform: scale(1.02);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);

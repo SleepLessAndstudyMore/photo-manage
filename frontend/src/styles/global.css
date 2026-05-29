@@ -149,8 +149,81 @@ button:not(:disabled):active,
   --el-skeleton-to-color: var(--gray-200);
 }
 
+/* ===== 像素级精致感 ===== */
+
+/* 中文与英文/数字之间添加 1/4 em 间距 */
+body {
+  word-spacing: 0;
+}
+
+/* 标题微负字间距 */
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+/* 大写标签字间距 */
+.uppercase-label {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* 禁用态统一 */
+:disabled,
+.is-disabled,
+[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 链接文字 */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 输入框 Focus 态 */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* 错误状态 */
+.is-error,
+.has-error {
+  border-color: var(--danger-500);
+  background: var(--danger-100);
+}
+
+/* 阴影5级规范 */
+.shadow-l0 { box-shadow: none; }
+.shadow-l1 { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.shadow-l2 { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06); }
+.shadow-l3 { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+.shadow-l4 { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+.shadow-l5 { box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16); }
+
+/* 圆角规范 */
+.radius-input { border-radius: 4px; }
+.radius-btn { border-radius: 6px; }
+.radius-photo { border-radius: 8px; }
+.radius-card { border-radius: 10px; }
+.radius-panel { border-radius: 12px; }
+.radius-page { border-radius: 16px; }
+
 /* 深色模式适配 */
 [data-theme="dark"] .el-skeleton {
   --el-skeleton-color: var(--gray-800);
   --el-skeleton-to-color: var(--gray-700);
+}
+
+[data-theme="dark"] a:hover {
+  text-decoration-color: var(--accent-hover);
 }
