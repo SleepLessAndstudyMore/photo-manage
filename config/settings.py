@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     PAGE_SIZE_DEFAULT: int = 50
     PAGE_SIZE_MAX: int = 200
 
+    # HuggingFace (CLIP 模型下载)
+    HF_TOKEN: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

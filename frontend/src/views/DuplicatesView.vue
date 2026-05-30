@@ -24,7 +24,7 @@
     <!-- 顶部统计 -->
     <div v-if="groups.length > 0 && !loading" class="stats-bar">
       <div class="stat-item">
-        <span class="stat-value stat-value--highlight">{{ totalDuplicates }}</span>
+        <span class="stat-value">{{ totalDuplicates }}</span>
         <span class="stat-label">重复照片</span>
       </div>
       <div class="stat-divider" />
@@ -34,7 +34,7 @@
       </div>
       <div class="stat-divider" />
       <div class="stat-item">
-        <span class="stat-value stat-value--danger">{{ formatSize(totalWasteSize) }}</span>
+        <span class="stat-value" :class="{ 'stat-value--danger': totalWasteSize > 0 }">{{ formatSize(totalWasteSize) }}</span>
         <span class="stat-label">可释放空间</span>
       </div>
     </div>
@@ -155,14 +155,24 @@
     </el-dialog>
 
     <!-- 对比对话框 -->
-    <el-dialog v-model="compareVisible" title="对比照片" width="90%" top="3vh" destroy-on-close class="glass-dialog">
+    <el-dialog
+      v-model="compareVisible"
+      title="对比照片"
+      width="92%"
+      top="2vh"
+      :close-on-click-modal="false"
+      destroy-on-close
+      class="glass-dialog compare-dialog"
+    >
       <div class="compare-row">
         <div v-for="photo in comparePhotos" :key="photo.id" class="compare-item">
-          <img
-            v-if="photo.thumbnail_path"
-            :src="`/thumbnails/${photo.thumbnail_path}`"
-            :alt="photo.file_name"
-          />
+          <div class="compare-img-wrap">
+            <img
+              v-if="photo.preview_path || photo.thumbnail_path"
+              :src="`/api/v1/photos/${photo.id}/original`"
+              :alt="photo.file_name"
+            />
+          </div>
           <p class="compare-name">{{ photo.file_name }}</p>
           <p class="compare-size">{{ formatSize(photo.file_size) }}</p>
         </div>
@@ -186,6 +196,7 @@ interface PhotoBrief {
   file_name: string
   file_size: number
   thumbnail_path: string | null
+  preview_path: string | null
 }
 
 interface DupGroup {
@@ -326,11 +337,9 @@ function formatSize(bytes: number) {
 .stats-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-  padding: var(--space-4) var(--space-5);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  justify-content: center;
+  gap: 0;
+  padding: var(--space-3) 0;
   margin-bottom: var(--space-4);
   flex-shrink: 0;
 }
@@ -338,19 +347,26 @@ function formatSize(bytes: number) {
 .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 var(--space-8);
+  min-width: 140px;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
+  opacity: 0.6;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 32px;
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.stat-value--highlight {
-  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .stat-value--danger {
@@ -358,15 +374,9 @@ function formatSize(bytes: number) {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-tertiary);
   font-weight: 500;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 32px;
-  background: var(--border-color);
 }
 
 .dup-loading { padding: var(--space-6); }
@@ -603,23 +613,51 @@ function formatSize(bytes: number) {
 }
 
 /* ===== 对比对话框 ===== */
+.compare-dialog :deep(.el-dialog) {
+  margin-top: 4vh !important;
+  max-height: 92vh;
+}
+
+.compare-dialog :deep(.el-dialog__body) {
+  padding: var(--space-3) var(--space-6);
+  max-height: calc(92vh - 120px) !important;
+  overflow: hidden;
+}
+
 .compare-row {
   display: flex;
-  gap: var(--space-6);
+  gap: var(--space-4);
   justify-content: center;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  height: calc(92vh - 140px);
 }
 
 .compare-item {
+  flex: 1;
+  min-width: 0;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
   text-align: center;
-  max-width: 400px;
+  height: 100%;
 }
 
-.compare-item img {
-  max-width: 100%;
-  max-height: 400px;
+.compare-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-100);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.compare-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .compare-name {

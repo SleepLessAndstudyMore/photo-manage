@@ -1,68 +1,87 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
+function lazyLoad(factory: () => Promise<any>) {
+  return async () => {
+    try {
+      return await factory()
+    } catch (err) {
+      // 动态 chunk 加载失败（通常是缓存了旧 index.html），自动刷新
+      const isChunkError =
+        err instanceof Error &&
+        /Failed to fetch dynamically imported module|Loading chunk/.test(err.message)
+      if (isChunkError && !sessionStorage.getItem('reloaded')) {
+        sessionStorage.setItem('reloaded', '1')
+        window.location.reload()
+        return
+      }
+      throw err
+    }
+  }
+}
+
 const routes = [
   { path: '/', redirect: '/timeline' },
   {
     path: '/timeline',
     name: 'timeline',
-    component: () => import('@/views/TimelineView.vue'),
+    component: lazyLoad(() => import('@/views/TimelineView.vue')),
   },
   {
     path: '/folders',
     name: 'folders',
-    component: () => import('@/views/FolderView.vue'),
+    component: lazyLoad(() => import('@/views/FolderView.vue')),
   },
   {
     path: '/search',
     name: 'search',
-    component: () => import('@/views/SearchView.vue'),
+    component: lazyLoad(() => import('@/views/SearchView.vue')),
   },
   {
     path: '/map',
     name: 'map',
-    component: () => import('@/views/MapView.vue'),
+    component: lazyLoad(() => import('@/views/MapView.vue')),
   },
   {
     path: '/people',
     name: 'people',
-    component: () => import('@/views/PeopleView.vue'),
+    component: lazyLoad(() => import('@/views/PeopleView.vue')),
   },
   {
     path: '/tags',
     name: 'tags',
-    component: () => import('@/views/TagsView.vue'),
+    component: lazyLoad(() => import('@/views/TagsView.vue')),
   },
   {
     path: '/albums',
     name: 'albums',
-    component: () => import('@/views/AlbumsView.vue'),
+    component: lazyLoad(() => import('@/views/AlbumsView.vue')),
   },
   {
     path: '/duplicates',
     name: 'duplicates',
-    component: () => import('@/views/DuplicatesView.vue'),
+    component: lazyLoad(() => import('@/views/DuplicatesView.vue')),
   },
   {
     path: '/albums/:id',
     name: 'album-detail',
-    component: () => import('@/views/AlbumDetailView.vue'),
+    component: lazyLoad(() => import('@/views/AlbumDetailView.vue')),
     meta: { title: '相册详情' },
   },
   {
     path: '/people/:id',
     name: 'people-detail',
-    component: () => import('@/views/PeopleDetailView.vue'),
+    component: lazyLoad(() => import('@/views/PeopleDetailView.vue')),
     meta: { title: '人物详情' },
   },
   {
     path: '/settings',
     name: 'settings',
-    component: () => import('@/views/SettingsView.vue'),
+    component: lazyLoad(() => import('@/views/SettingsView.vue')),
   },
   {
     path: '/photos/:id',
     name: 'photo-detail',
-    component: () => import('@/views/PhotoDetailView.vue'),
+    component: lazyLoad(() => import('@/views/PhotoDetailView.vue')),
     meta: { title: '照片详情' },
   },
 ]

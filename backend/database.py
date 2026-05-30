@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 engine = create_engine(
     settings.DATABASE_URL,
     echo=False,
-    connect_args={"check_same_thread": False},
+    connect_args={"check_same_thread": False, "timeout": 30},
 )
 
 
@@ -20,6 +20,7 @@ def init_db() -> None:
     with engine.connect() as conn:
         conn.execute(text("PRAGMA journal_mode=WAL"))
         conn.execute(text("PRAGMA synchronous=NORMAL"))
+        conn.execute(text("PRAGMA busy_timeout=30000"))  # 30s retry on lock
         conn.execute(text("PRAGMA cache_size=-8000"))  # ~8MB cache
         # S1 migration: add file_modified_time column
         try:

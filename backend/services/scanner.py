@@ -15,6 +15,8 @@ from backend.utils.file_utils import (
     is_supported_file, is_supported_image, is_supported_video,
     compute_file_hash, SKIP_DIR_NAMES,
 )
+from PIL import Image, ImageOps
+import imagehash
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +139,16 @@ class Scanner:
                     args=(new_photo_ids, new_source_paths, new_is_videos),
                     library_id=library_id,
                 )
+
+            # Submit phash computation for existing photos missing phash
+            from backend.services.duplicate_detector import DuplicateDetector
+            dup_detector = DuplicateDetector(self._session_factory)
+            task_manager.create_and_run(
+                TaskType.DUPLICATE,
+                dup_detector.compute_phash_batch,
+                args=(library_id,),
+                library_id=library_id,
+            )
         finally:
             session.close()
 
@@ -196,6 +208,12 @@ class Scanner:
 
         if existing:
             photo = existing
+            # 文件被修改过，清空缩略图路径以触发重新生成
+            if photo.file_modified_time != file_mtime:
+                photo.thumbnail_path = None
+                photo.thumbnail_width = None
+                photo.thumbnail_height = None
+                photo.preview_path = None
         else:
             photo = Photo(
                 library_source_id=library_id,
@@ -225,8 +243,23 @@ class Scanner:
         photo.height = metadata.get("height")
         photo.file_missing = False
 
+        # 为图片计算感知哈希（phash），用于视觉相似检测
+        if is_img and not photo.phash:
+            photo.phash = self._compute_phash(file_path)
+
         photo.updated_at = datetime.utcnow()
         return photo
+
+    def _compute_phash(self, file_path: Path) -> str | None:
+        """计算图片的感知哈希，用于视觉相似照片检测。"""
+        try:
+            img = Image.open(file_path)
+            img = ImageOps.exif_transpose(img)
+            phash = imagehash.phash(img)
+            return str(phash)
+        except Exception as e:
+            logger.warning(f"感知哈希计算失败: {file_path}: {e}")
+            return None
 
     def _check_missing_files(self, library_id: int, session: Session, task_info):
         photos = session.exec(

@@ -8,6 +8,10 @@ export function addLibrary(data: { name: string; path: string }) {
   return client.post('/libraries', data)
 }
 
+export function browseDirectory(path?: string) {
+  return client.get('/libraries/browse', { params: { path } })
+}
+
 export function deleteLibrary(id: number) {
   return client.delete(`/libraries/${id}`)
 }

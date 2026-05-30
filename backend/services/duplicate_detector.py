@@ -8,6 +8,20 @@ from backend.models.photo import Photo
 
 logger = logging.getLogger(__name__)
 
+
+def _compute_phash_for_path(file_path: str) -> str | None:
+    """Compute perceptual hash for a single image file."""
+    try:
+        from PIL import Image, ImageOps
+        import imagehash
+        img = Image.open(file_path)
+        img = ImageOps.exif_transpose(img)
+        phash = imagehash.phash(img)
+        return str(phash)
+    except Exception as e:
+        logger.warning(f"感知哈希计算失败: {file_path}: {e}")
+        return None
+
 # Default phash hamming distance threshold for visual similarity
 DEFAULT_PHASH_THRESHOLD = 10
 
@@ -86,6 +100,7 @@ class DuplicateDetector:
                         "file_name": p.file_name,
                         "file_size": p.file_size,
                         "thumbnail_path": p.thumbnail_path,
+                        "preview_path": p.preview_path,
                     }
                     for p in photos
                 ],
@@ -154,3 +169,56 @@ class DuplicateDetector:
                 })
 
         return groups
+
+    def compute_phash_batch(self, task_info, library_id: int | None = None):
+        """批量为缺失 phash 的照片计算感知哈希。
+
+        作为后台任务运行，为当前库中所有尚未计算 phash 的图片补算。
+        """
+        session = self._session_factory()
+        try:
+            conditions = [
+                Photo.phash.is_(None),
+                Photo.file_missing == False,  # noqa: E712
+                Photo.is_video == False,
+            ]
+            if library_id is not None:
+                conditions.append(Photo.library_source_id == library_id)
+
+            photos = session.exec(
+                select(Photo).where(*conditions)
+            ).all()
+
+            total = len(photos)
+            if total == 0:
+                task_info.progress = 1.0
+                task_info.message = "没有需要计算的照片"
+                return
+
+            processed = 0
+            for photo in photos:
+                if task_info.is_cancelled:
+                    return
+
+                phash = _compute_phash_for_path(photo.file_path)
+                if phash:
+                    photo.phash = phash
+                    session.add(photo)
+
+                processed += 1
+                if processed % 50 == 0:
+                    session.commit()
+                    from backend.tasks.task_manager import task_manager
+                    task_manager.update_progress(
+                        task_info.id, processed / total,
+                        f"计算相似指纹 {processed}/{total}"
+                    )
+
+            session.commit()
+            from backend.tasks.task_manager import task_manager
+            task_manager.update_progress(
+                task_info.id, 1.0,
+                f"完成，共处理 {total} 张照片"
+            )
+        finally:
+            session.close()

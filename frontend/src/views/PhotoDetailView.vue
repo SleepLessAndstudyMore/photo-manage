@@ -37,7 +37,13 @@
       <!-- 左侧：照片大图预览（60%） -->
       <div class="detail-preview" @click="showLightbox = true">
         <img
-          v-if="photo?.preview_path"
+          v-if="photo && !photo.file_missing"
+          :src="`/api/v1/photos/${photo.id}/original`"
+          :alt="photo.file_name"
+          class="detail-image"
+        />
+        <img
+          v-else-if="photo?.preview_path"
           :src="`/thumbnails/${photo.preview_path}`"
           :alt="photo.file_name"
           class="detail-image"

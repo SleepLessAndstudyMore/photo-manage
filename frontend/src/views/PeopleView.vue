@@ -25,6 +25,28 @@
       </div>
     </div>
 
+    <!-- 任务进度条 -->
+    <div v-if="isFaceTaskRunning || isClusterTaskRunning" class="task-progress-area">
+      <div v-if="isFaceTaskRunning" class="task-progress-item">
+        <div class="task-progress-header">
+          <span class="task-progress-label">人脸检测中</span>
+          <span class="task-progress-text">{{ faceTask.message }}</span>
+        </div>
+        <div class="task-progress-bar">
+          <div class="task-progress-fill" :style="{ width: `${faceTask.progress * 100}%` }" />
+        </div>
+      </div>
+      <div v-if="isClusterTaskRunning" class="task-progress-item">
+        <div class="task-progress-header">
+          <span class="task-progress-label">人脸聚类中</span>
+          <span class="task-progress-text">{{ clusterTask.message }}</span>
+        </div>
+        <div class="task-progress-bar">
+          <div class="task-progress-fill" :style="{ width: `${clusterTask.progress * 100}%` }" />
+        </div>
+      </div>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="loading-area">
       <el-skeleton :rows="3" animated />
@@ -169,13 +191,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getFaceClusters, detectFaces, clusterFaces, mergeFaceClusters, updateFaceCluster } from '@/api/faces'
 import type { FaceCluster } from '@/types/face'
 import EmptyState from '@/components/EmptyState.vue'
+import { useWebSocket } from '@/composables/useWebSocket'
 
 const router = useRouter()
+const ws = useWebSocket()
 
 const clusters = ref<FaceCluster[]>([])
 const total = ref(0)
@@ -186,6 +210,16 @@ const clustering = ref(false)
 const selectedIds = ref<number[]>([])
 const currentPage = ref(1)
 
+// 任务进度状态
+interface TaskState {
+  taskId: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | ''
+  progress: number
+  message: string
+}
+const faceTask = ref<TaskState>({ taskId: '', status: '', progress: 0, message: '' })
+const clusterTask = ref<TaskState>({ taskId: '', status: '', progress: 0, message: '' })
+
 // 重命名
 const renameVisible = ref(false)
 const renameCluster = ref<FaceCluster | null>(null)
@@ -194,8 +228,55 @@ const renameName = ref('')
 const namedClusters = computed(() => clusters.value.filter(c => c.name))
 const unnamedClusters = computed(() => clusters.value.filter(c => !c.name))
 
+// 计算是否有任务进行中
+const isFaceTaskRunning = computed(() =>
+  faceTask.value.status === 'running' || faceTask.value.status === 'pending'
+)
+const isClusterTaskRunning = computed(() =>
+  clusterTask.value.status === 'running' || clusterTask.value.status === 'pending'
+)
+
+let unsubWs: (() => void) | null = null
+
 onMounted(() => {
   fetchClusters()
+  ws.connect()
+  unsubWs = ws.onMessage((msg) => {
+    // 人脸检测任务进度
+    if (msg.type === 'face_detect_progress') {
+      faceTask.value = {
+        taskId: msg.data.task_id,
+        status: msg.data.status || 'running',
+        progress: msg.data.progress ?? 0,
+        message: msg.data.message || '',
+      }
+      if (msg.data.status === 'completed' || msg.data.status === 'failed') {
+        detecting.value = false
+        if (msg.data.status === 'completed') {
+          fetchClusters()
+        }
+      }
+    }
+    // 人脸聚类任务进度
+    if (msg.type === 'face_cluster_progress') {
+      clusterTask.value = {
+        taskId: msg.data.task_id,
+        status: msg.data.status || 'running',
+        progress: msg.data.progress ?? 0,
+        message: msg.data.message || '',
+      }
+      if (msg.data.status === 'completed' || msg.data.status === 'failed') {
+        clustering.value = false
+        if (msg.data.status === 'completed') {
+          fetchClusters()
+        }
+      }
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (unsubWs) unsubWs()
 })
 
 async function fetchClusters() {
@@ -272,20 +353,30 @@ async function saveRename() {
 
 async function onDetectFaces() {
   detecting.value = true
+  faceTask.value = { taskId: '', status: 'pending', progress: 0, message: '启动中...' }
   try {
-    await detectFaces()
-  } finally {
+    const res = await detectFaces()
+    faceTask.value.taskId = res.data?.task_id || ''
+  } catch {
     detecting.value = false
+    faceTask.value.status = 'failed'
+    faceTask.value.message = '启动失败'
   }
+  // 等待 WebSocket 通知任务完成
 }
 
 async function onClusterFaces() {
   clustering.value = true
+  clusterTask.value = { taskId: '', status: 'pending', progress: 0, message: '启动中...' }
   try {
-    await clusterFaces()
-  } finally {
+    const res = await clusterFaces()
+    clusterTask.value.taskId = res.data?.task_id || ''
+  } catch {
     clustering.value = false
+    clusterTask.value.status = 'failed'
+    clusterTask.value.message = '启动失败'
   }
+  // 等待 WebSocket 通知任务完成
 }
 </script>
 
@@ -626,5 +717,55 @@ async function onClusterFaces() {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
+}
+
+/* ===== 任务进度条 ===== */
+.task-progress-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.task-progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.task-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-progress-label {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.task-progress-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.task-progress-bar {
+  height: 4px;
+  background: var(--gray-200);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.task-progress-fill {
+  height: 100%;
+  background: var(--brand-gradient);
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 </style>

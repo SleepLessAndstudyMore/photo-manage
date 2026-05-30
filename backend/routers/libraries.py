@@ -2,8 +2,8 @@ import os
 import shutil
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlmodel import Session, select, func
 
 from backend.database import get_session
 from backend.models.library_source import LibrarySource
@@ -13,6 +13,7 @@ from backend.models.photo_album import PhotoAlbum
 from backend.models.photo_face import PhotoFace
 from backend.models.photo_embedding import PhotoEmbedding
 from backend.models.face_cluster import FaceCluster
+from backend.models.tag import Tag
 from backend.schemas.library import (
     LibraryCreate, LibraryResponse, LibraryListResponse, ScanTriggerResponse,
 )
@@ -112,6 +113,25 @@ async def delete_library(
 
     session.delete(library)
 
+    # Update Tag photo_count after PhotoTag deletion
+    _refresh_tag_counts(session)
+
+    # Clean up orphaned Tags (no remaining PhotoTag associations)
+    orphan_tags = session.exec(
+        select(Tag).where(
+            ~Tag.id.in_(
+                select(PhotoTag.tag_id).where(
+                    PhotoTag.tag_id.is_not(None)
+                ).distinct()
+            )
+        )
+    ).all()
+    for tag in orphan_tags:
+        session.delete(tag)
+
+    # Update FaceCluster face_count after PhotoFace deletion
+    _refresh_face_cluster_counts(session)
+
     # Clean up orphaned FaceClusters (no remaining faces after photo deletion)
     orphan_clusters = session.exec(
         select(FaceCluster).where(
@@ -127,6 +147,83 @@ async def delete_library(
 
     session.commit()
     return None
+
+
+def _refresh_tag_counts(session: Session):
+    """Recalculate Tag.photo_count from actual PhotoTag rows."""
+    count_rows = session.exec(
+        select(PhotoTag.tag_id, func.count(PhotoTag.photo_id))
+        .group_by(PhotoTag.tag_id)
+    ).all()
+    tag_counts = {row[0]: row[1] for row in count_rows}
+    for tag in session.exec(select(Tag)).all():
+        new_count = tag_counts.get(tag.id, 0)
+        if tag.photo_count != new_count:
+            tag.photo_count = new_count
+            session.add(tag)
+
+
+def _refresh_face_cluster_counts(session: Session):
+    """Recalculate FaceCluster.face_count = distinct photo count."""
+    count_rows = session.exec(
+        select(PhotoFace.face_cluster_id, func.count(PhotoFace.photo_id.distinct()))
+        .where(PhotoFace.face_cluster_id.is_not(None))
+        .group_by(PhotoFace.face_cluster_id)
+    ).all()
+    cluster_counts = {row[0]: row[1] for row in count_rows}
+    for cluster in session.exec(select(FaceCluster)).all():
+        new_count = cluster_counts.get(cluster.id, 0)
+        if cluster.face_count != new_count:
+            cluster.face_count = new_count
+            session.add(cluster)
+
+
+@router.get("/browse")
+async def browse_directory(path: str = Query(default="")):
+    """Browse local directory and return subdirectories.
+
+    When path is empty, returns all available drives (Windows) or root (/).
+    """
+    import platform
+    import string
+
+    target = path.strip() if path else ""
+
+    # Root level: list all drives (Windows) or root dir
+    if not target:
+        if platform.system() == "Windows":
+            drives = []
+            for letter in string.ascii_uppercase:
+                drive = f"{letter}:\\"
+                if os.path.isdir(drive):
+                    drives.append({"name": f"{letter}:", "path": drive})
+            return {
+                "current_path": "Computer",
+                "parent_path": None,
+                "items": drives,
+            }
+        else:
+            target = "/"
+
+    target = os.path.abspath(target)
+    if not os.path.isdir(target):
+        raise HTTPException(status_code=400, detail=f"路径不存在: {target}")
+
+    items = []
+    try:
+        for entry in os.scandir(target):
+            if entry.is_dir() and not entry.name.startswith("."):
+                items.append({"name": entry.name, "path": entry.path})
+    except PermissionError:
+        pass
+
+    parent = str(Path(target).parent) if str(Path(target).parent) != target else None
+
+    return {
+        "current_path": target,
+        "parent_path": parent,
+        "items": sorted(items, key=lambda x: x["name"].lower()),
+    }
 
 
 @router.post("/{library_id}/scan", response_model=ScanTriggerResponse)

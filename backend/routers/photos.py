@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlmodel import Session, select, func, extract
 from sqlalchemy import desc as sa_desc, asc as sa_asc
 
@@ -408,3 +410,17 @@ async def update_photo(
 @router.get("/{photo_id}/stream")
 async def stream_video(photo_id: int):
     raise HTTPException(status_code=501, detail="S2 实现")
+
+
+@router.get("/{photo_id}/original")
+async def get_original_photo(photo_id: int, session: Session = Depends(get_session)):
+    """Serve the original photo file from disk."""
+    photo = session.get(Photo, photo_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="照片不存在")
+    if photo.file_missing:
+        raise HTTPException(status_code=404, detail="文件丢失")
+    file_path = Path(photo.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="文件不存在")
+    return FileResponse(str(file_path))

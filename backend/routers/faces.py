@@ -147,7 +147,6 @@ async def merge_clusters(
 
     # Keep the first cluster as target, merge others into it
     target = clusters[0]
-    merged_face_count = target.face_count
 
     for source in clusters[1:]:
         # Reassign all faces from source to target
@@ -157,10 +156,16 @@ async def merge_clusters(
         for f in faces:
             f.face_cluster_id = target.id
             session.add(f)
-        merged_face_count += source.face_count
         session.delete(source)
 
-    target.face_count = merged_face_count
+    session.commit()
+
+    # Recalculate face_count = distinct photo count
+    photo_count = session.exec(
+        select(func.count(PhotoFace.photo_id.distinct()))
+        .where(PhotoFace.face_cluster_id == target.id)
+    ).one()
+    target.face_count = photo_count or 0
     session.add(target)
     session.commit()
     session.refresh(target)
@@ -260,3 +265,25 @@ async def cluster_faces():
         args=(),
     )
     return {"message": "人脸聚类任务已启动", "task_id": task_id}
+
+
+@router.post("/clusters/refresh-counts")
+async def refresh_cluster_counts(session: Session = Depends(get_session)):
+    """Recalculate face_count = distinct photo count for all clusters."""
+    count_rows = session.exec(
+        select(PhotoFace.face_cluster_id, func.count(PhotoFace.photo_id.distinct()))
+        .where(PhotoFace.face_cluster_id.is_not(None))
+        .group_by(PhotoFace.face_cluster_id)
+    ).all()
+    cluster_counts = {row[0]: row[1] for row in count_rows}
+
+    updated = 0
+    for cluster in session.exec(select(FaceCluster)).all():
+        new_count = cluster_counts.get(cluster.id, 0)
+        if cluster.face_count != new_count:
+            cluster.face_count = new_count
+            session.add(cluster)
+            updated += 1
+
+    session.commit()
+    return {"message": f"已更新 {updated} 个人物数量", "updated": updated}

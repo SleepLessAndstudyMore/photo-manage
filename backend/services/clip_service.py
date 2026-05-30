@@ -50,7 +50,11 @@ def _try_load_model(timeout: float = 30.0, max_retries: int = 3) -> bool:
             def _load():
                 try:
                     from sentence_transformers import SentenceTransformer
-                    result[0] = SentenceTransformer("clip-ViT-B-32")
+                    from config.settings import settings
+                    kwargs = {}
+                    if settings.HF_TOKEN:
+                        kwargs["token"] = settings.HF_TOKEN
+                    result[0] = SentenceTransformer("clip-ViT-B-32", **kwargs)
                     logger.info("CLIP model loaded (clip-ViT-B-32)")
                 except Exception as e:
                     exception[0] = e

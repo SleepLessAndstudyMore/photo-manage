@@ -123,63 +123,64 @@
       </div>
     </section>
 
-    <!-- 主题设置 -->
-    <section class="settings-section">
-      <div class="section-header">
-        <h3 class="section-title">主题设置</h3>
-      </div>
-      <div class="theme-options">
-        <div
-          v-for="opt in themeOptions"
-          :key="opt.value"
-          class="theme-option"
-          :class="{ 'is-active': currentTheme === opt.value }"
-          @click="setTheme(opt.value)"
-        >
-          <div class="theme-preview" :class="`theme-preview--${opt.value}`">
-            <div class="theme-preview-bar" />
-            <div class="theme-preview-content">
-              <div class="theme-preview-dot" />
-              <div class="theme-preview-lines">
-                <div class="theme-preview-line" />
-                <div class="theme-preview-line short" />
+    <!-- 主题设置 + 系统配置 并排 -->
+    <div class="settings-bottom-grid">
+      <section class="settings-section">
+        <div class="section-header">
+          <h3 class="section-title">主题设置</h3>
+        </div>
+        <div class="theme-options">
+          <div
+            v-for="opt in themeOptions"
+            :key="opt.value"
+            class="theme-option"
+            :class="{ 'is-active': currentTheme === opt.value }"
+            @click="setTheme(opt.value)"
+          >
+            <div class="theme-preview" :class="`theme-preview--${opt.value}`">
+              <div class="theme-preview-bar" />
+              <div class="theme-preview-content">
+                <div class="theme-preview-dot" />
+                <div class="theme-preview-lines">
+                  <div class="theme-preview-line" />
+                  <div class="theme-preview-line short" />
+                </div>
               </div>
             </div>
+            <span class="theme-option-label">{{ opt.label }}</span>
           </div>
-          <span class="theme-option-label">{{ opt.label }}</span>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- System Config -->
-    <section class="settings-section">
-      <h3 class="section-title">系统配置</h3>
-      <div class="config-grid">
-        <div class="config-item">
-          <div class="config-label">扫描间隔（秒）</div>
-          <div class="config-control">
-            <el-input-number v-model="configForm.scan_interval" :min="10" :max="3600" size="default" />
+      <section class="settings-section">
+        <div class="section-header">
+          <h3 class="section-title">系统配置</h3>
+          <button type="button" class="pill-btn pill-btn--primary" @click="saveConfig">保存配置</button>
+        </div>
+        <div class="config-grid">
+          <div class="config-item">
+            <div class="config-label">扫描间隔（秒）</div>
+            <div class="config-control">
+              <el-input-number v-model="configForm.scan_interval" :min="10" :max="3600" size="default" />
+            </div>
+          </div>
+          <div class="config-item">
+            <div class="config-label">缩略图质量</div>
+            <div class="config-control">
+              <el-input-number v-model="configForm.thumbnail_quality" :min="0" :max="100" size="default" />
+              <span class="config-value">%</span>
+            </div>
+          </div>
+          <div class="config-item">
+            <div class="config-label">文件监控</div>
+            <div class="config-control">
+              <el-switch v-model="configForm.watchdog_enabled" />
+              <span class="switch-hint">{{ configForm.watchdog_enabled ? '已开启（实时监控文件变动）' : '已关闭' }}</span>
+            </div>
           </div>
         </div>
-        <div class="config-item">
-          <div class="config-label">缩略图质量</div>
-          <div class="config-control">
-            <el-slider v-model="configForm.thumbnail_quality" :min="10" :max="100" style="width: 220px" />
-            <span class="config-value">{{ configForm.thumbnail_quality }}%</span>
-          </div>
-        </div>
-        <div class="config-item">
-          <div class="config-label">文件监控</div>
-          <div class="config-control">
-            <el-switch v-model="configForm.watchdog_enabled" />
-            <span class="switch-hint">{{ configForm.watchdog_enabled ? '已开启（实时监控文件变动）' : '已关闭' }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="config-actions">
-        <button type="button" class="pill-btn pill-btn--primary" @click="saveConfig">保存配置</button>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <!-- Add Library Dialog -->
     <el-dialog v-model="showAddDialog" title="添加图库源" width="480px" class="glass-dialog" @closed="resetForm">
@@ -188,7 +189,20 @@
           <el-input v-model="addForm.name" placeholder="例如：我的照片" />
         </el-form-item>
         <el-form-item label="目录路径" required>
-          <el-input v-model="addForm.path" placeholder="例如：D:\Photos" />
+          <div class="path-picker-row">
+            <el-input
+              v-model="addForm.path"
+              placeholder="点击浏览选择本地目录"
+              readonly
+              class="path-input"
+            />
+            <button class="pill-btn browse-btn" type="button" @click="showDirPicker = true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              浏览...
+            </button>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -199,6 +213,9 @@
         </button>
       </template>
     </el-dialog>
+
+    <!-- Directory Picker -->
+    <DirectoryPicker v-model:visible="showDirPicker" @select="onDirSelected" />
   </div>
 </template>
 
@@ -208,6 +225,7 @@ import { ElMessage } from 'element-plus'
 import { useLibraryStore } from '@/stores/library'
 import { useSystemStore } from '@/stores/system'
 import { cancelTask } from '@/api/system'
+import DirectoryPicker from '@/components/DirectoryPicker.vue'
 
 const libraryStore = useLibraryStore()
 const systemStore = useSystemStore()
@@ -215,6 +233,7 @@ const systemStore = useSystemStore()
 const showAddDialog = ref(false)
 const addingLibrary = ref(false)
 const addForm = ref({ name: '', path: '' })
+const showDirPicker = ref(false)
 const currentTheme = ref(localStorage.getItem('theme') || 'system')
 const themeOptions = [
   { value: 'light', label: '浅色模式' },
@@ -280,6 +299,15 @@ function statusLabel(status: string) {
 
 function getLibraryName(id: number): string {
   return libraries.value.find(l => l.id === id)?.name || `图库 #${id}`
+}
+
+function onDirSelected(path: string) {
+  addForm.value.path = path
+  // Auto-fill name from folder name if empty
+  if (!addForm.value.name) {
+    const parts = path.replace(/\\/g, '/').split('/')
+    addForm.value.name = parts[parts.length - 1] || parts[parts.length - 2] || ''
+  }
 }
 
 async function onAddLibrary() {
@@ -355,8 +383,6 @@ async function saveConfig() {
 
 <style scoped>
 .settings-page {
-  max-width: 960px;
-  margin: 0 auto;
   padding: var(--space-8);
   overflow-y: auto;
   height: 100%;
@@ -521,9 +547,22 @@ async function saveConfig() {
   font-size: var(--text-body);
 }
 
+.settings-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+@media (max-width: 1024px) {
+  .settings-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===== 主题选择 ===== */
 .theme-options {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-4);
 }
 
@@ -673,11 +712,11 @@ async function saveConfig() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 480px;
 }
 
 .config-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 120px 1fr;
   align-items: center;
   gap: var(--space-8);
 }
@@ -704,12 +743,6 @@ async function saveConfig() {
   font-variant-numeric: tabular-nums;
 }
 
-.config-actions {
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-color);
-}
-
 .switch-hint {
   margin-left: var(--space-2);
   font-size: var(--text-caption);
@@ -721,6 +754,29 @@ async function saveConfig() {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
+}
+
+/* ===== 目录选择器 ===== */
+.path-picker-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.path-input {
+  flex: 1;
+}
+
+.browse-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.browse-btn svg {
+  color: var(--warning-500);
 }
 
 @keyframes spin {

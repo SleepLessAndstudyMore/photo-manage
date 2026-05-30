@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 
 from config.settings import settings
 from backend.models.photo import Photo
@@ -46,7 +46,8 @@ class FaceService:
             return []
         try:
             import cv2
-            img = cv2.imread(image_path)
+            # 使用 imdecode 替代 imread，支持中文路径
+            img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR)
             if img is None:
                 return []
             faces = app.get(img)
@@ -66,20 +67,29 @@ class FaceService:
     def _save_face_thumbnail(self, photo_path: str, bbox: list[int], face_id: int) -> str | None:
         """Crop face region and save as thumbnail. Returns relative path."""
         try:
-            img = Image.open(photo_path).convert("RGB")
-            x1, y1, x2, y2 = bbox
+            import cv2
+            # 使用与 detect_faces 相同的读取方式，确保坐标一致
+            img = cv2.imdecode(np.fromfile(photo_path, dtype=np.uint8), cv2.IMREAD_COLOR)
+            if img is None:
+                return None
+            x1, y1, x2, y2 = map(int, bbox)
+            h, w = img.shape[:2]
             # Add margin
             margin = int((x2 - x1) * 0.3)
             x1 = max(0, x1 - margin)
             y1 = max(0, y1 - margin)
-            x2 = min(img.width, x2 + margin)
-            y2 = min(img.height, y2 + margin)
-            face_img = img.crop((x1, y1, x2, y2))
-            face_img.thumbnail((160, 160), Image.LANCZOS)
+            x2 = min(w, x2 + margin)
+            y2 = min(h, y2 + margin)
+            face_img = img[y1:y2, x1:x2]
+            if face_img.size == 0:
+                return None
+            face_img = cv2.resize(face_img, (160, 160), interpolation=cv2.INTER_LANCZOS4)
 
             rel_path = f"faces/{face_id}.jpg"
             abs_path = FACE_THUMBNAIL_DIR / f"{face_id}.jpg"
-            face_img.save(abs_path, "JPEG", quality=85)
+            # 使用 imencode + tofile 支持中文路径
+            _, buf = cv2.imencode('.jpg', face_img)
+            buf.tofile(str(abs_path))
             return rel_path
         except Exception as e:
             logger.warning(f"Face thumbnail failed: {e}")
@@ -239,8 +249,9 @@ class FaceService:
         for face_id, label in zip(face_ids, labels):
             cluster_map.setdefault(int(label), []).append(face_id)
 
+        # Assign faces to clusters first
         for label, members in cluster_map.items():
-            cluster = FaceCluster(face_count=len(members))
+            cluster = FaceCluster(face_count=0)  # placeholder, will update below
             session.add(cluster)
             session.flush()
 
@@ -254,6 +265,16 @@ class FaceService:
                     pf.face_cluster_id = cluster.id
                     session.add(pf)
 
+        session.commit()
+
+        # Refresh face_count = distinct photo count for each cluster
+        for cluster in session.exec(select(FaceCluster)).all():
+            photo_count = session.exec(
+                select(func.count(PhotoFace.photo_id.distinct()))
+                .where(PhotoFace.face_cluster_id == cluster.id)
+            ).one()
+            cluster.face_count = photo_count or 0
+            session.add(cluster)
         session.commit()
 
     def run_clustering(self, task_info):

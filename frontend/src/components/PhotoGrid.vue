@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import type { Photo } from '@/types/photo'
 import EmptyState from './EmptyState.vue'
 
@@ -268,19 +268,34 @@ const sentinelRef = ref<HTMLElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
 let intersectionObserver: IntersectionObserver | null = null
 
-onMounted(() => {
-  if (sentinelRef.value) {
-    intersectionObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          emit('load-more')
-        }
-      },
-      { root: scrollRef.value, rootMargin: '200px' }
-    )
-    intersectionObserver.observe(sentinelRef.value)
-  }
-})
+// 延迟初始化 IntersectionObserver，等待 sentinel 在 DOM 中渲染完毕
+function setupSentinelObserver() {
+  intersectionObserver?.disconnect()
+  intersectionObserver = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        emit('load-more')
+      }
+    },
+    { root: scrollRef.value, rootMargin: '200px' }
+  )
+  intersectionObserver.observe(sentinelRef.value!)
+}
+
+let observerSetup = false
+
+watch(
+  () => [props.loading, props.photos.length] as const,
+  ([loading, len]) => {
+    if (!observerSetup && !loading && len > 0) {
+      observerSetup = true
+      nextTick(() => {
+        if (sentinelRef.value) setupSentinelObserver()
+      })
+    }
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
