@@ -189,20 +189,19 @@
           <el-input v-model="addForm.name" placeholder="例如：我的照片" />
         </el-form-item>
         <el-form-item label="目录路径" required>
-          <div class="path-picker-row">
-            <el-input
-              v-model="addForm.path"
-              placeholder="点击浏览选择本地目录"
-              readonly
-              class="path-input"
-            />
-            <button class="pill-btn browse-btn" type="button" @click="showDirPicker = true">
+          <el-input
+            v-model="addForm.path"
+            placeholder="点击选择本地目录"
+            readonly
+            class="path-input is-clickable"
+            @click="showDirPicker = true"
+          >
+            <template #suffix>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
               </svg>
-              浏览...
-            </button>
-          </div>
+            </template>
+          </el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -757,26 +756,16 @@ async function saveConfig() {
 }
 
 /* ===== 目录选择器 ===== */
-.path-picker-row {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
+.path-input.is-clickable :deep(.el-input__wrapper) {
+  cursor: pointer;
 }
 
-.path-input {
-  flex: 1;
+.path-input.is-clickable :deep(.el-input__inner) {
+  cursor: pointer;
 }
 
-.browse-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex-shrink: 0;
-  padding: var(--space-2) var(--space-3);
-}
-
-.browse-btn svg {
-  color: var(--warning-500);
+.path-input.is-clickable:hover :deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px var(--accent) inset;
 }
 
 @keyframes spin {

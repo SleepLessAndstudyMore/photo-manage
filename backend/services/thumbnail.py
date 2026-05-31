@@ -18,8 +18,8 @@ class ThumbnailGenerator:
         self.thumbnail_dir = thumbnail_dir or settings.THUMBNAIL_DIR
         self.thumbnail_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_small(self, photo_id: int, source_path: str, is_video: bool = False) -> dict:
-        output_path = self._get_output_path(photo_id, "small")
+    def generate_small(self, photo_id: int, source_path: str, is_video: bool = False, file_hash: str | None = None) -> dict:
+        output_path = self._get_output_path(photo_id, "small", file_hash)
         if is_video:
             w, h = self._generate_video_thumbnail(source_path, output_path, 300)
         else:
@@ -30,8 +30,8 @@ class ThumbnailGenerator:
             "thumbnail_height": h,
         }
 
-    def generate_preview(self, photo_id: int, source_path: str, is_video: bool = False) -> dict:
-        output_path = self._get_output_path(photo_id, "preview")
+    def generate_preview(self, photo_id: int, source_path: str, is_video: bool = False, file_hash: str | None = None) -> dict:
+        output_path = self._get_output_path(photo_id, "preview", file_hash)
         if is_video:
             w, h = self._generate_video_thumbnail(source_path, output_path, 1200)
         else:
@@ -42,9 +42,9 @@ class ThumbnailGenerator:
             "preview_height": h,
         }
 
-    def generate_both(self, photo_id: int, source_path: str, is_video: bool = False) -> dict:
-        small = self.generate_small(photo_id, source_path, is_video)
-        preview = self.generate_preview(photo_id, source_path, is_video)
+    def generate_both(self, photo_id: int, source_path: str, is_video: bool = False, file_hash: str | None = None) -> dict:
+        small = self.generate_small(photo_id, source_path, is_video, file_hash)
+        preview = self.generate_preview(photo_id, source_path, is_video, file_hash)
         result = {}
         result.update(small)
         result.update(preview)
@@ -56,6 +56,7 @@ class ThumbnailGenerator:
         photo_ids: list[int],
         source_paths: list[str],
         is_videos: list[bool],
+        file_hashes: list[str],
         db_session_factory,
     ):
         from backend.models.photo import Photo
@@ -63,19 +64,38 @@ class ThumbnailGenerator:
 
         generator = ThumbnailGenerator()
         total = len(photo_ids)
-        for idx, (pid, src_path, is_vid) in enumerate(zip(photo_ids, source_paths, is_videos)):
+        for idx, (pid, src_path, is_vid, file_hash) in enumerate(zip(photo_ids, source_paths, is_videos, file_hashes)):
             if task_info.is_cancelled:
                 return
             try:
-                result = generator.generate_both(pid, src_path, is_vid)
+                result = generator.generate_both(pid, src_path, is_vid, file_hash)
                 session = db_session_factory()
                 try:
                     photo = session.exec(select(Photo).where(Photo.id == pid)).first()
                     if photo:
-                        photo.thumbnail_path = result.get("thumbnail_path")
+                        new_thumb = result.get("thumbnail_path")
+                        new_preview = result.get("preview_path")
+
+                        # 清理旧缩略图文件（文件名变化时才需要）
+                        if photo.thumbnail_path and photo.thumbnail_path != new_thumb:
+                            old_thumb = generator.thumbnail_dir / photo.thumbnail_path
+                            if old_thumb.exists():
+                                try:
+                                    old_thumb.unlink()
+                                except OSError:
+                                    pass
+                        if photo.preview_path and photo.preview_path != new_preview:
+                            old_preview = generator.thumbnail_dir / photo.preview_path
+                            if old_preview.exists():
+                                try:
+                                    old_preview.unlink()
+                                except OSError:
+                                    pass
+
+                        photo.thumbnail_path = new_thumb
                         photo.thumbnail_width = result.get("thumbnail_width")
                         photo.thumbnail_height = result.get("thumbnail_height")
-                        photo.preview_path = result.get("preview_path")
+                        photo.preview_path = new_preview
                         session.add(photo)
                         session.commit()
                 finally:
@@ -186,5 +206,8 @@ class ThumbnailGenerator:
             pass
         return 1.0
 
-    def _get_output_path(self, photo_id: int, suffix: str) -> Path:
+    def _get_output_path(self, photo_id: int, suffix: str, file_hash: str | None = None) -> Path:
+        if file_hash:
+            hash_prefix = file_hash[:8]
+            return self.thumbnail_dir / f"{photo_id}_{hash_prefix}_{suffix}.jpg"
         return self.thumbnail_dir / f"{photo_id}_{suffix}.jpg"

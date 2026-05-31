@@ -2,10 +2,30 @@
   <el-dialog
     v-model="visible"
     title="选择目录"
-    width="520px"
+    width="560px"
     class="glass-dialog"
     @open="onOpen"
   >
+    <!-- 最近使用 -->
+    <div v-if="recentPaths.length > 0" class="recent-section">
+      <div class="section-label">最近使用</div>
+      <div class="recent-list">
+        <div
+          v-for="path in recentPaths"
+          :key="path"
+          class="recent-item"
+          :class="{ 'is-current': path === currentPath }"
+          @click="loadDir(path)"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="recent-name">{{ pathName(path) }}</span>
+          <span class="recent-path">{{ path }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 当前路径面包屑 -->
     <div class="dir-path-bar">
       <button
@@ -18,7 +38,7 @@
         </svg>
         上级
       </button>
-      <div class="dir-current">{{ currentPath }}</div>
+      <div class="dir-current">{{ currentPath || '此电脑' }}</div>
     </div>
 
     <!-- 目录列表 -->
@@ -29,7 +49,7 @@
         class="dir-item"
         @click="enterDir(item.path)"
       >
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" class="dir-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" class="dir-icon">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
         </svg>
         <span class="dir-name">{{ item.name }}</span>
@@ -66,13 +86,56 @@ interface DirItem {
   path: string
 }
 
+const LS_KEY_LAST = 'dirPicker_lastPath'
+const LS_KEY_RECENT = 'dirPicker_recentPaths'
+const MAX_RECENT = 5
+
 const currentPath = ref('')
 const parentPath = ref<string | null>(null)
 const items = ref<DirItem[]>([])
 const loading = ref(false)
+const recentPaths = ref<string[]>(loadRecent())
+
+function loadRecent(): string[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY_RECENT)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch { /* ignore */ }
+  return []
+}
+
+function saveRecent(paths: string[]) {
+  try {
+    localStorage.setItem(LS_KEY_RECENT, JSON.stringify(paths.slice(0, MAX_RECENT)))
+  } catch { /* ignore */ }
+}
+
+function saveLast(path: string) {
+  try {
+    localStorage.setItem(LS_KEY_LAST, path)
+  } catch { /* ignore */ }
+}
+
+function loadLast(): string | null {
+  try {
+    return localStorage.getItem(LS_KEY_LAST)
+  } catch { /* ignore */ }
+  return null
+}
+
+function pathName(path: string): string {
+  const parts = path.replace(/\\/g, '/').split('/').filter(Boolean)
+  return parts[parts.length - 1] || path
+}
 
 async function onOpen() {
-  if (!currentPath.value) {
+  const last = loadLast()
+  if (last && last !== currentPath.value) {
+    await loadDir(last)
+  } else if (!currentPath.value) {
     await loadDir()
   }
 }
@@ -103,6 +166,12 @@ function goUp() {
 
 function confirm() {
   if (currentPath.value) {
+    // 保存到最近使用
+    const updated = [currentPath.value, ...recentPaths.value.filter(p => p !== currentPath.value)]
+    recentPaths.value = updated.slice(0, MAX_RECENT)
+    saveRecent(recentPaths.value)
+    saveLast(currentPath.value)
+
     emit('select', currentPath.value)
     visible.value = false
   }
@@ -110,6 +179,67 @@ function confirm() {
 </script>
 
 <style scoped>
+/* 最近使用 */
+.recent-section {
+  margin-bottom: var(--space-3);
+}
+
+.section-label {
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.recent-item:hover {
+  background: var(--accent-light);
+}
+
+.recent-item.is-current {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.recent-item svg {
+  color: var(--warning-500);
+  flex-shrink: 0;
+}
+
+.recent-name {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.recent-path {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: auto;
+  font-family: monospace;
+}
+
+/* 路径栏 */
 .dir-path-bar {
   display: flex;
   align-items: center;
@@ -157,6 +287,7 @@ function confirm() {
   user-select: all;
 }
 
+/* 目录列表 */
 .dir-list {
   max-height: 320px;
   overflow-y: auto;
@@ -208,6 +339,7 @@ function confirm() {
   font-size: var(--text-body);
 }
 
+/* 按钮 */
 .pill-btn {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);

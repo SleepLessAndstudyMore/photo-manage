@@ -51,6 +51,7 @@ class Scanner:
             new_photo_ids = []
             new_source_paths = []
             new_is_videos = []
+            new_file_hashes = []
             processed = 0
 
             for file_path in files:
@@ -63,6 +64,7 @@ class Scanner:
                         new_photo_ids.append(photo.id)
                         new_source_paths.append(str(file_path))
                         new_is_videos.append(photo.is_video)
+                        new_file_hashes.append(photo.file_hash or "")
                 except Exception as e:
                     logger.warning(f"Failed to process {file_path}: {e}")
                     session.rollback()
@@ -103,7 +105,7 @@ class Scanner:
                 task_manager.create_and_run(
                     TaskType.THUMBNAIL,
                     ThumbnailGenerator.generate_for_photos,
-                    args=(new_photo_ids, new_source_paths, new_is_videos, self._session_factory),
+                    args=(new_photo_ids, new_source_paths, new_is_videos, new_file_hashes, self._session_factory),
                     library_id=library_id,
                 )
 
@@ -214,6 +216,7 @@ class Scanner:
                 photo.thumbnail_width = None
                 photo.thumbnail_height = None
                 photo.preview_path = None
+                photo.file_hash = compute_file_hash(file_path)
         else:
             photo = Photo(
                 library_source_id=library_id,

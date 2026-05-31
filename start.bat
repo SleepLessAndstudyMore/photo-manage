@@ -25,6 +25,27 @@ if errorlevel 1 (
     pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 )
 
+echo.
+echo Building frontend...
+
+node --version >nul 2>&1
+if errorlevel 1 (
+    echo Node.js not found! Please install Node.js to build frontend.
+    pause
+    exit /b 1
+)
+
+cd frontend
+
+if not exist "node_modules" (
+    echo Installing frontend dependencies...
+    call npm install
+)
+
+call npm run build
+cd ..
+
+echo.
 echo Starting server at http://127.0.0.1:8000
 python main.py
 pause
